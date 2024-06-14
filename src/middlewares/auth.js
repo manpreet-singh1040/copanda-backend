@@ -1,4 +1,4 @@
-const jwt=require('jsonwebtoken');
+import jwt from 'jsonwebtoken';
 
 const auth=(req,res,next)=>{
     if(req.cookies===undefined)
@@ -19,4 +19,4 @@ const auth=(req,res,next)=>{
     }
 }
 
-module.exports=auth;
+export default auth;

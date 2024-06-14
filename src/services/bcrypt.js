@@ -1,0 +1,2 @@
+//hash and compare passwords
+

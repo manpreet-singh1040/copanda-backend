@@ -1,10 +1,10 @@
-const express = require('express');
+import express from 'express'
+import LoginRouter from './login.js';
+import authMiddleware from "../middlewares/auth.js"
+
 const router = express.Router();
-const loginRoute=require('./login');
-const authMiddleware=require('../middlewares/auth');
 
-
-router.use("/login",loginRoute);
+router.use("/login",LoginRouter);
 
 router.get("/", (req, res) => {
     res.send('Hello World!')
@@ -14,4 +14,4 @@ router.get('/checklogin',authMiddleware,(req,res)=>{
 })
 
 
-module.exports = router
+export default router

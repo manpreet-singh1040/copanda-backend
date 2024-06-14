@@ -1,7 +1,9 @@
-const express=require('express');
-const router=express.Router();
-const jwt=require('jsonwebtoken');
-router.post('/',(req,res)=>{
+import express from 'express'
+import jwt from 'jsonwebtoken'
+
+const LoginRouter = express.Router();
+
+LoginRouter.post('/',(req,res)=>{
     let body=req.body;
     try{
         //to check if user is present in db
@@ -24,4 +26,4 @@ router.post('/',(req,res)=>{
     }
 })
 
-module.exports=router;
+export default LoginRouter
