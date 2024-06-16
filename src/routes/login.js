@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express=require('express');
 const router=express.Router();
 const jwt=require('jsonwebtoken');
@@ -6,7 +7,7 @@ router.post('/',(req,res)=>{
     try{
         //to check if user is present in db
         let payload=body.username;
-        let sessionToken=jwt.sign(payload,"jwtkey");
+        let sessionToken=jwt.sign(payload,process.env.JWTKEY);
         res.cookie("sessionToken",sessionToken,{
             httpOnly:false,
             maxAge:9000000,

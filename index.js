@@ -1,6 +1,8 @@
 //external dependencies
 require('dotenv/config');
+require('dotenv').config();
 const express = require('express');
+
 const bodyParser = require('body-parser');
 const Router = require("./src/routes/router")
 const cookieParser=require('cookie-parser');

@@ -1,5 +1,5 @@
 const jwt=require('jsonwebtoken');
-
+require('dotenv').config();
 const auth=(req,res,next)=>{
     if(req.cookies===undefined)
         {
@@ -7,7 +7,7 @@ const auth=(req,res,next)=>{
         }
     try{
 
-        let payload=jwt.verify(req.cookies.sessionToken,"jwtkey");
+        let payload=jwt.verify(req.cookies.sessionToken,process.env.JWTKEY);
         console.log('verify successful!!');
         console.log(payload);
         next();
