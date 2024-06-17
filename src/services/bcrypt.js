@@ -1,5 +1,5 @@
 //hash and compare passwords
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcrypt-node');
 const saltRounds = parseInt(process.env.SALT) || 10;
 
 const HashPassword = async (plainPassword) => {

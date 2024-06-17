@@ -1,45 +1,49 @@
 const {exec}=require('child_process');
-const funC=(input)=>{
-exec("gcc test.c -o pro",(err,stdout,stderr)=>{
+const funC=(input,fileName)=>{
+exec(`gcc ${fileName}.c -o pro${fileName}`,(err,stdout,stderr)=>{
     if(err)
         {
             console.log(`err in compilation!`);
             console.log(err);
-            return;
+            return err;
         }
         if(stderr){
             console.log(`error output!!`);
             console.log(stderr);
-            return;
+            return stderr;
         }
-        const childProcess=exec("./pro",(err,stdout,stderr)=>{
+        const childProcess=exec(`./pro${fileName}`,async(err,stdout,stderr)=>{
             if(err){
                 console.log(err);
                 return;
             }
+            exec(`rm pro${fileName}`);
             if(stderr){
                 console.log(stderr);
-                return;
+                return stderr;
             }
             console.log(`the output is:${stdout}`);
+            return(stdout);
         });
         childProcess.stdin.write(input);
         childProcess.stdin.end();
 });
 }
 //fun();
-const funJava = (input) => {
-    const childProcess = exec("java test2.java");
+const funJava = (input,fileName) => {
+    const childProcess = exec(`java ${fileName}.java`);
 
     childProcess.stdin.write(input);
     childProcess.stdin.end();
 
     childProcess.stdout.on('data', (data) => {
         console.log(`Output: ${data}`);
+        return data;
     });
 
     childProcess.stderr.on('data', (data) => {
         console.error(`stderr: ${data}`);
+        return data;
     });
 
     childProcess.on('close', (code) => {
@@ -51,34 +55,36 @@ const funJava = (input) => {
 
 //funJava('32\n45');
 
-const funCpp=(input)=>{
-    exec("g++ test3.cpp -o pro",(err,stdout,stderr)=>{
+const funCpp=(input,fileName)=>{
+    exec(`g++ ${fileName}.cpp -o pro${fileName}`,(err,stdout,stderr)=>{
         if(err)
             {
                 console.log(`err in compilation!`);
                 console.log(err);
-                return;
+                return err;
             }
             if(stderr){
                 console.log(`error output!!`);
                 console.log(stderr);
-                return;
+                return stderr;
             }
-            const childProcess=exec("./pro",(err,stdout,stderr)=>{
+            const childProcess=exec(`./pro${fileName}`,(err,stdout,stderr)=>{
                 if(err){
                     console.log(err);
-                    return;
+                    return err;
                 }
+                exec(`rm pro${fileName}`);
                 if(stderr){
                     console.log(stderr);
-                    return;
+                    return stderr;
                 }
                 console.log(`the output is:${stdout}`);
+                return stdout;
             });
             childProcess.stdin.write(input);
             childProcess.stdin.end();
     });
     }
-funCpp('35\n69');
+//funCpp('35\n69');
 module.exports={funC,funJava,funCpp};
 
