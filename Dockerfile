@@ -9,10 +9,9 @@ WORKDIR /project
 
 COPY package.json package.json
 COPY package-lock.json package-lock.json
+RUN npm i
 COPY index.js index.js
 COPY .env .env
 COPY src src
 
-RUN npm i
 
-RUN npm start

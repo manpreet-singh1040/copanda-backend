@@ -45,11 +45,11 @@ async function start() {
 
     //test DB end
 
-    //Listen and serve
-    app.listen(port, () => {
-    console.log(`Server listening at port:${port}`)
-    });
-
+    
 }
+//Listen and serve
+app.listen(port, () => {
+console.log(`Server listening at port:${port}`)
+});
 
-start();
+//start();

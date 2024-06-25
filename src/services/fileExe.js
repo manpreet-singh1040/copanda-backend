@@ -1,90 +1,118 @@
 const {exec}=require('child_process');
+const util=require('util');
+const asyncExec=util.promisify(exec);
+
+
+
 const funC=(input,fileName)=>{
-exec(`gcc ${fileName}.c -o pro${fileName}`,(err,stdout,stderr)=>{
-    if(err)
-        {
-            console.log(`err in compilation!`);
-            console.log(err);
-            return err;
-        }
-        if(stderr){
-            console.log(`error output!!`);
-            console.log(stderr);
-            return stderr;
-        }
-        const childProcess=exec(`./pro${fileName}`,async(err,stdout,stderr)=>{
-            if(err){
-                console.log(err);
-                return;
-            }
-            exec(`rm pro${fileName}`);
+    return new Promise(async(resolve,reject)=>{
+
+
+        try{
+    
+            console.log(`inside fileexec`)
+            const{stderr,stdout}=await asyncExec(`gcc ${fileName}.c -o pro${fileName}`);
+            console.log(`completed exec`)
+            console.log(`first exec op${stdout}`)
             if(stderr){
+                console.log(`error output!!`);
                 console.log(stderr);
-                return stderr;
+                reject(stderr);
             }
-            console.log(`the output is:${stdout}`);
-            return(stdout);
-        });
-        childProcess.stdin.write(input);
-        childProcess.stdin.end();
-});
+            const execute=exec(`./pro${fileName}`);
+            execute.stdin.write(input);
+            execute.stdin.end();
+            let op=``;
+            let errop=``;
+    
+            for await(const chunk of execute.stdout)
+            {
+                op+=chunk;
+            }
+            for await(const chunk of execute.stderr)
+            {
+                errop+=chunk;
+            }
+            execute.on('exit',(code)=>{
+                exec(`rm pro${fileName} && rm ${fileName}.c`);
+                console.log(`exised`);
+                resolve(op);
+
+            })
+        }
+        catch(err){
+            console.log(`try catch err${err}`);
+            reject(err);
+        }
+    })
 }
 //fun();
-const funJava = (input,fileName) => {
-    const childProcess = exec(`java ${fileName}.java`);
-
+const funJava =async(input,fileName)=>{
+    return new Promise(async(resolve,reject)=>{
+        const childProcess = exec(`java ${fileName}.java`);
+        let op=``;
     childProcess.stdin.write(input);
     childProcess.stdin.end();
 
     childProcess.stdout.on('data', (data) => {
         console.log(`Output: ${data}`);
-        return data;
+        op+=data;
     });
 
     childProcess.stderr.on('data', (data) => {
         console.error(`stderr: ${data}`);
-        return data;
+        reject(data);
     });
 
     childProcess.on('close', (code) => {
-        if (code !== 0) {
             console.log(`Child process exited with code ${code}`);
-        }
+            resolve (op);
+        exec(`rm ${fileName}.java`);
     });
+    })
 };
 
-//funJava('32\n45');
-
 const funCpp=(input,fileName)=>{
-    exec(`g++ ${fileName}.cpp -o pro${fileName}`,(err,stdout,stderr)=>{
-        if(err)
-            {
-                console.log(`err in compilation!`);
-                console.log(err);
-                return err;
-            }
+    return new Promise(async(resolve,reject)=>{
+
+
+        try{
+    
+            console.log(`inside fileexec`)
+            const{stderr,stdout}=await asyncExec(`g++ ${fileName}.cpp -o pro${fileName}`);
+            console.log(`completed exec`)
+            console.log(`first exec op${stdout}`)
             if(stderr){
                 console.log(`error output!!`);
                 console.log(stderr);
-                return stderr;
+                reject(stderr);
             }
-            const childProcess=exec(`./pro${fileName}`,(err,stdout,stderr)=>{
-                if(err){
-                    console.log(err);
-                    return err;
-                }
-                exec(`rm pro${fileName}`);
-                if(stderr){
-                    console.log(stderr);
-                    return stderr;
-                }
-                console.log(`the output is:${stdout}`);
-                return stdout;
-            });
-            childProcess.stdin.write(input);
-            childProcess.stdin.end();
-    });
-    }
-//funCpp('35\n69');
+            const execute=exec(`./pro${fileName}`);
+            execute.stdin.write(input);
+            execute.stdin.end();
+            let op=``;
+            let errop=``;
+    
+            for await(const chunk of execute.stdout)
+            {
+                op+=chunk;
+            }
+            for await(const chunk of execute.stderr)
+            {
+                errop+=chunk;
+            }
+            execute.on('exit',(code)=>{
+                exec(`rm pro${fileName} && rm ${fileName}.cpp`);
+                console.log(`exised`);
+                resolve(op);
+
+            })
+        }
+        catch(err){
+            console.log(`try catch err${err}`);
+            reject(err);
+        }
+    })
+}
 module.exports={funC,funJava,funCpp};
 
