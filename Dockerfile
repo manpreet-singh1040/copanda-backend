@@ -1,6 +1,4 @@
 FROM ubuntu:latest 
-RUN apt-get update && apt-get install -y gcc
-RUN apt-get update && apt install -y default-jre 
 RUN apt-get update && apt-get install -y node.js
 RUN apt-get update && apt-get install -y npm
 RUN mkdir project

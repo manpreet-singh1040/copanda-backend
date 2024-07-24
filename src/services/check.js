@@ -1,27 +1,35 @@
 
 
+const lang=`java`;
 const code=`import java.util.*;
-public class test2
+import java.io.*;
+public class test
 {
 	public static void main(String[] args) {
-		System.out.println("Hello World");
-		Scanner sc=new Scanner(System.in);
-		int a=sc.nextInt();
-		System.out.println(a);
-		int b=sc.nextInt();
-		System.out.println(b);
-		sc.close();
+		try{
+
+			File input=new File("input.txt");
+			System.out.println("Hello World");
+			Scanner sc=new Scanner(input);
+			int a=sc.nextInt();
+			System.out.println(a);
+			int b=sc.nextInt();
+			System.out.println(b);
+			sc.close();
+		}
+		catch(FileNotFoundException e){
+			System.out.println(e);
+		}
 	}
-}
-`;
-const lang=`java`;
-const input=`35\n65`;
+}`;
+const input=`5
+10`;
 const userid=`1234`;
 
 let body={code,lang,input,userid};
 
 const fun=async(body)=>{
-    let response=await fetch(`http://localhost:3000/testexe`,{
+    let response=await fetch(`http://localhost:6996/java`,{
         method:'POST',
         headers:{'Content-Type': 'application/json'},
         body:JSON.stringify(body),
@@ -29,6 +37,7 @@ const fun=async(body)=>{
     if(response.ok)
         {
             let q=await response.json();
+           
             console.log(q);
            // console.log(q.response.replace(/\+/g, ''));
         }
@@ -38,3 +47,5 @@ const fun=async(body)=>{
 };
 
 fun(body);
+//const temp="\x01\x00\x00\x00\x00\x00\x00\fHello World\n\x01\x00\x00\x00\x00\x00\x00\x055\n10\n";
+//console.log(temp);
