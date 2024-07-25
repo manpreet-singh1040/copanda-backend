@@ -3,18 +3,19 @@
 const lang=`java`;
 const code=`import java.util.*;
 import java.io.*;
-public class test
+public class ash123
 {
 	public static void main(String[] args) {
 		try{
 
-			File input=new File("input.txt");
-			System.out.println("Hello World");
+			File input=new File("ash123.txt");
+			System.out.println("fuck u");
 			Scanner sc=new Scanner(input);
 			int a=sc.nextInt();
 			System.out.println(a);
 			int b=sc.nextInt();
 			System.out.println(b);
+            
 			sc.close();
 		}
 		catch(FileNotFoundException e){
@@ -24,9 +25,9 @@ public class test
 }`;
 const input=`5
 10`;
-const userid=`1234`;
+const subId=`ash123`;
 
-let body={code,lang,input,userid};
+let body={code,lang,input,subId};
 
 const fun=async(body)=>{
     let response=await fetch(`http://localhost:6996/java`,{
@@ -47,5 +48,3 @@ const fun=async(body)=>{
 };
 
 fun(body);
-//const temp="\x01\x00\x00\x00\x00\x00\x00\fHello World\n\x01\x00\x00\x00\x00\x00\x00\x055\n10\n";
-//console.log(temp);
