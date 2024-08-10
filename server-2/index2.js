@@ -69,7 +69,10 @@ const create=(image,pool)=>{
         try{
             const container=await docker.createContainer({
                 Image:image,
-                Tty:true
+                Tty:true,
+                HostConfig:{
+                    NetworkMode:'none'
+                }
             })
             await container.start();
             pool.push(container);
@@ -142,11 +145,11 @@ const fun=async(lang,input,code,subId)=>{
     return new Promise(async(resolve,reject)=>{
         try{
         const conId=container.id;
-        const srcPath=`D:/projects/ashleel-backend/${subId}.${lang}`;
+        const srcPath=`/home/mws/app/server-2/${subId}.${lang}`;
         const desPath=`/${subId}.${lang}`;
            await execPromise(`docker cp ${srcPath} ${conId}:${desPath}`)
            console.log(`code coplied!!`);
-           await execPromise(`docker cp D:/projects/ashleel-backend/${subId}.txt ${conId}:/${subId}.txt`);
+           await execPromise(`docker cp /home/mws/app/server-2/${subId}.txt ${conId}:/${subId}.txt`);
            console.log(`input file copied!!`);
 //          
            let qwerty=-1;
@@ -174,8 +177,10 @@ const fun=async(lang,input,code,subId)=>{
                     resolve({op:"TLE",status:false});
                     await container.kill();
                     returnContainer(tempPool,container);
+                    await execPromise(`rm -f ${subId}.${lang} && rm -f ${subId}.txt`);
             } catch (err) {
                 console.error('Error killing command:', err);
+                await execPromise(`rm -f ${subId}.${lang} && rm -f ${subId}.txt`);
             }
         }, 1500);
                 let output = Buffer.alloc(0);
@@ -193,6 +198,8 @@ const fun=async(lang,input,code,subId)=>{
                     const cleanOutput = asciiOutput.replace(/[^\x20-\x7E\n]/g, '');
                         resolve({op:cleanOutput,status:true});
                         returnContainer(tempPool,container);
+                        await execPromise(`rm -f ${subId}.${lang} && rm -f ${subId}.txt`);
+
                     }
                     else{
                         output=null;
@@ -201,10 +208,12 @@ const fun=async(lang,input,code,subId)=>{
                 stream.on('error',async(err)=>{
                     clearTimeout(timeout);
                     reject(err);
+                    await execPromise(`rm -f ${subId}.${lang} && rm -f ${subId}.txt`);
                 })
         }
         catch(err){
             reject(err);
+            await execPromise(`rm -f ${subId}.${lang} && rm -f ${subId}.txt`);
         }
         
     })
