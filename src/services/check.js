@@ -30,7 +30,7 @@ const subId=`ash123`;
 let body={code,lang,input,subId};
 
 const fun=async(body)=>{
-    let response=await fetch(`http://localhost:6996/java`,{
+    let response=await fetch(`http://20.40.50.186:6996/java`,{
         method:'POST',
         headers:{'Content-Type': 'application/json'},
         body:JSON.stringify(body),

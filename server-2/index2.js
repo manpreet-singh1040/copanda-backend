@@ -1,5 +1,3 @@
-require('dotenv/config');
-require('dotenv').config();
 const express=require("express");
 const bodyParser = require('body-parser');
 const Docker=require("dockerode");
@@ -8,16 +6,20 @@ const app=express();
 const {exec}=require('child_process');
 const util = require('util');
 const execPromise = util.promisify(exec);
+
+
+const os=require('os');
 const containerPool={
     java:[],
     cpp:[]
 }
-const docker = new Docker({ socketPath: '//./pipe/docker_engine' });
-
-
-
-
-
+let docker;
+if (os.platform() === 'win32') {
+    docker = new Docker({ socketPath: '//./pipe/docker_engine' });
+  } else {
+    docker = new Docker({ socketPath: '/var/run/docker.sock' });
+  }
+  
 
 
 
@@ -29,7 +31,6 @@ public class ash123
 {
 	public static void main(String[] args) {
 		try{
-
 			File input=new File("ash123.txt");
 			System.out.println("Hello World");
 			Scanner sc=new Scanner(input);
