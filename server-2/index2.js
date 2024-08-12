@@ -146,10 +146,10 @@ const fun=async(lang,input,code,subId)=>{
         try{
         const conId=container.id;
         const srcPath=`/home/mws/app/server-2/${subId}.${lang}`;
-        const desPath=`/${subId}.${lang}`;
+        const desPath=`/Main.${lang}`;
            await execPromise(`docker cp ${srcPath} ${conId}:${desPath}`)
            console.log(`code coplied!!`);
-           await execPromise(`docker cp /home/mws/app/server-2/${subId}.txt ${conId}:/${subId}.txt`);
+           await execPromise(`docker cp /home/mws/app/server-2/${subId}.txt ${conId}:/input.txt`);
            console.log(`input file copied!!`);
 //          
            let qwerty=-1;
@@ -165,7 +165,7 @@ const fun=async(lang,input,code,subId)=>{
            {
             qwerty=2;
            }
-           const cmd=[`javac ${subId}.java && java ${subId} && rm ${subId}.java && rm ${subId}.class && rm ${subId}.txt`,`g++ ${subId}.cpp -o ${subId} && ./${subId}`,`gcc ${subId}.c -o ${subId} && ./${subId}`];
+           const cmd=[`javac Main.java && java Main && rm Main.java && rm Main.class && rm input.txt`,`g++ Main.cpp -o ${subId} && ./${subId}`,`gcc Main.c -o ${subId} && ./${subId}`];
            const exec= await container.exec({Cmd:['/bin/sh',`-c`,cmd[qwerty]],AttachStdout:true,AttachStderr:true});
            const stream=await exec.start({Detach:false});
            
@@ -229,7 +229,7 @@ fun1();
 
 app.use(bodyParser.json());
 
-app.post("/java",async(req,res)=>{
+app.post("/",async(req,res)=>{
     
     let rcode=req.body.code;
     let rlang=req.body.lang;
