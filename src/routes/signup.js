@@ -1,18 +1,25 @@
-require('dotenv').config();
 const express=require('express');
 const router=express.Router();
+const User=require('../models/users');
+const { v4: uuidv4 } = require('uuid');
+require('dotenv').config();
+
 const jwt=require('jsonwebtoken');
-const User=require("../models/users");
-router.post('/',async (req,res)=>{
-    let body=req.body;
+router.post('/',async(req,res)=>{
+    const {username,password,email}=req.body;
     try{
-        //to check if user is present in db
-        let data=await User.findOne({name:body.username});
-        if(data.password!== body.password)
-        {
-            throw new Error(`password not matched!!`);
-        }
-        let payload=data.userId;
+        console.log(req.body);
+        let userId=uuidv4();
+        console.log(`database insertion start!!`);
+        await User.create({
+            userId,
+            name:username,
+            password,
+            email,
+            rating:0
+        });
+        console
+        let payload=userId;
         let sessionToken=jwt.sign(payload,process.env.JWTKEY);
         res.cookie("sessionToken",sessionToken,{
             httpOnly:false,
@@ -25,10 +32,11 @@ router.post('/',async (req,res)=>{
         res.json({status:true});
     }
     catch(err){
-        console.log("invalid username and password!!");
         console.log(err);
         res.json({status:false});
     }
+
 })
+
 
 module.exports=router;

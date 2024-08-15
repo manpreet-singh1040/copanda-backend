@@ -2,7 +2,7 @@
 require('dotenv/config');
 require('dotenv').config();
 const express = require('express');
-
+const mongoose=require('mongoose');
 const bodyParser = require('body-parser');
 const Router = require("./src/routes/router")
 const cookieParser=require('cookie-parser');
@@ -15,7 +15,7 @@ const {GetUserByEmail, CreateUser} = require("./src/services/database")
 // express server instance
 const app = express();
 const port = process.env.PORT || 8080;
-
+const mongoPort=process.env.MONGO_PORT || 2017;
 //basic configs
 app.use(cors());
 app.use(cookieParser());
@@ -27,7 +27,17 @@ app.use(
 //setup router 
 app.use("/", Router);
 
+const mongoConnection=async()=>{
+    try{
 
+        await mongoose.connect(`mongodb://localhost:${mongoPort}/`);
+        console.log(`mongo connected!!`);
+    }
+    catch(err){
+        console.log(`mongo connecteion err!!`);
+    }
+}
+mongoConnection();
 async function start() {
     await runMigrations();
 

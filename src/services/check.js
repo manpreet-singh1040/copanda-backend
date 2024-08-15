@@ -3,34 +3,29 @@
 const lang=`java`;
 const code=`import java.util.*;
 import java.io.*;
-public class ash123
+public class Main
 {
 	public static void main(String[] args) {
-		try{
 
-			File input=new File("ash123.txt");
 			System.out.println("fuck u");
-			Scanner sc=new Scanner(input);
+			Scanner sc=new Scanner(System.in);
 			int a=sc.nextInt();
 			System.out.println(a);
 			int b=sc.nextInt();
-			System.out.println(b);
-            
+			System.out.println("hell yeah baby!!!");
 			sc.close();
-		}
-		catch(FileNotFoundException e){
-			System.out.println(e);
-		}
+		
 	}
 }`;
 const input=`5
 10`;
-const subId=`ash123`;
+const userid=`ash123`;
 
-let body={code,lang,input,subId};
+let body={code,lang,input,userid};
 
 const fun=async(body)=>{
-    let response=await fetch(`http://20.40.50.186:6996/java`,{
+    let response=await fetch(`http://20.40.50.186:6996/`,{
+    //let response=await fetch(`http://localhost:3000/exec`,{
         method:'POST',
         headers:{'Content-Type': 'application/json'},
         body:JSON.stringify(body),
@@ -43,11 +38,11 @@ const fun=async(body)=>{
            // console.log(q.response.replace(/\+/g, ''));
         }
         else{
-            console.log(`err!!!`);
+            console.log(response);
         }
 };
 
-//fun(body);
+fun(body);
 
 const fun2 = async () => {
     const { exec } = require('child_process');
@@ -94,6 +89,6 @@ EOF"`;
     }
 };
 
-fun2();
+//fun2();
 
 

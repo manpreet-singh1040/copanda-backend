@@ -165,7 +165,7 @@ const fun=async(lang,input,code,subId)=>{
            {
             qwerty=2;
            }
-           const cmd=[`javac Main.java && java Main && rm Main.java && rm Main.class && rm input.txt`,`g++ Main.cpp -o ${subId} && ./${subId}`,`gcc Main.c -o ${subId} && ./${subId}`];
+           const cmd=[`javac Main.java && java Main < input.txt && rm Main.java && rm Main.class && rm input.txt`,`g++ Main.cpp -o ${subId} && ./${subId} < input.txt`,`gcc Main.c -o ${subId} && ./${subId} < input.txt`];
            const exec= await container.exec({Cmd:['/bin/sh',`-c`,cmd[qwerty]],AttachStdout:true,AttachStderr:true});
            const stream=await exec.start({Detach:false});
            
@@ -234,7 +234,7 @@ app.post("/",async(req,res)=>{
     let rcode=req.body.code;
     let rlang=req.body.lang;
     let rinput=req.body.input;
-    let rsubId=req.body.subId;
+    let rsubId=req.body.userid;
     let op=await fun(rlang,rinput,rcode,rsubId);
     res.json({output:op.op,status:op.status});
 })
