@@ -18,7 +18,7 @@ router.post('/',async(req,res)=>{
             email,
             rating:0
         });
-        console
+        console.log(`user data aaded in db!!`);
         let payload=userId;
         let sessionToken=jwt.sign(payload,process.env.JWTKEY);
         res.cookie("sessionToken",sessionToken,{

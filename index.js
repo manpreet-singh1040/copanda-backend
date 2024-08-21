@@ -17,7 +17,10 @@ const app = express();
 const port = process.env.PORT || 8080;
 const mongoPort=process.env.MONGO_PORT || 2017;
 //basic configs
-app.use(cors());
+app.use(cors({
+    origin:'http://localhost:5173',
+    credentials:true
+}));
 app.use(cookieParser());
 app.use(bodyParser.json());
 app.use(
