@@ -20,11 +20,11 @@ const contestSchema=mongoose.Schema({
         required:true
     },
     contestAuthor:{
-        type:[Number],
+        type:String,
         required:true
     },
     contestQues:{
-        type:[Number],
+        type:[String],
         required:true
     }
 });

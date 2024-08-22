@@ -20,6 +20,10 @@ const questionsSchema=new mongoose.Schema({
         type:String,
         required:true,
     },
+    description:{
+        type:String,
+        required:true
+    },
     score:{
         type:Number,
         required:true
@@ -29,9 +33,6 @@ const questionsSchema=new mongoose.Schema({
     },
     testOp:{
         type:String
-    },
-    execTime:{
-        type:Number
     }
 });
 
