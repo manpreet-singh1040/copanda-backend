@@ -1,0 +1,19 @@
+
+services:
+    mongo:
+       image: mongo
+       networks: 
+          - server-network
+       ports:
+          - "27017:27017"
+       volumes:
+          - ./mongoconvol:/data/db
+    server:
+       image: povtemp/ashleel:2
+       network_mode: "host"  
+       ports:
+         - "3000:3000"
+networks:
+    server-network:
+      driver: bridge
+

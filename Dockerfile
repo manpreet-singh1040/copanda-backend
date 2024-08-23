@@ -11,5 +11,6 @@ RUN npm i
 COPY index.js index.js
 COPY .env .env
 COPY src src
+ENTRYPOINT ["node","index.js" ]
 
 

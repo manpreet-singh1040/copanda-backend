@@ -6,21 +6,41 @@ const mongoose=require('mongoose');
 const bodyParser = require('body-parser');
 const Router = require("./src/routes/router")
 const cookieParser=require('cookie-parser');
+
+
+const app = express();
+
 const cors=require('cors')
+
+// Define your allowed origins
+const allowedOrigins = ['https://code.ddks.live', 'http://localhost:5173'];
+
+// Configure the CORS middleware
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true); // Allow the request
+    } else {
+      callback(new Error('Not allowed by CORS')); // Reject the request
+    }
+  },
+  credentials:true
+}));
+
 
 //internal dependencies
 const runMigrations = require("./src/db/migrations/migrations");
 const {GetUserByEmail, CreateUser} = require("./src/services/database")
 
 // express server instance
-const app = express();
 const port = process.env.PORT || 8080;
 const mongoPort=process.env.MONGO_PORT || 2017;
+const mongoUrl=process.env.MONGO_URL || "localhost";
 //basic configs
-app.use(cors({
-    origin:'http://localhost:5173',
+/*app.use(cors({
+    origin:'https://code.ddks.live',
     credentials:true
-}));
+}));*/
 app.use(cookieParser());
 app.use(bodyParser.json());
 app.use(
@@ -33,11 +53,11 @@ app.use("/", Router);
 const mongoConnection=async()=>{
     try{
 
-        await mongoose.connect(`mongodb://localhost:${mongoPort}/`);
+        await mongoose.connect(`mongodb://${mongoUrl}:${mongoPort}/`);
         console.log(`mongo connected!!`);
     }
     catch(err){
-        console.log(`mongo connecteion err!!`);
+        console.log(`mongo connecteion err!! ${err}`);
     }
 }
 mongoConnection();

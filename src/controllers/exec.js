@@ -7,7 +7,7 @@ const testexe=async (req,res)=>{
         {
             try{
                 console.log({code,input,lang,userid});
-                let resp=await fetch(`http://20.40.50.186:6996/`,{
+                let resp=await fetch(`http://localhost:6996/`,{
                     method:`POST`,
                     headers:{"Content-Type":"application/json"},
                     body:JSON.stringify({code,input,lang,userid})
