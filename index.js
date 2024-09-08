@@ -34,7 +34,7 @@ const {GetUserByEmail, CreateUser} = require("./src/services/database")
 
 // express server instance
 const port = process.env.PORT || 8080;
-const mongoPort=process.env.MONGO_PORT || 2017;
+const mongoPort=process.env.MONGO_PORT || 27017;
 const mongoUrl=process.env.MONGO_URL || "localhost";
 //basic configs
 /*app.use(cors({
