@@ -1,0 +1,53 @@
+name: Build and Deploy Express Server
+
+on:
+  push:
+    branches:
+      - main  # Trigger on push to the main branch
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '20'  # Specify the Node.js version
+
+    - name: Install dependencies
+      run: npm install
+
+
+
+    - name: Deploy to EC2
+      env:
+        SSH_PASSWORD: ${{ secrets.EC2_SSH_PASSWORD }}  # Add your password to GitHub secrets
+      run: |
+        # Install sshpass
+        sudo apt-get update
+        sudo apt-get install -y sshpass
+        
+        # Deploy files to EC2
+        sshpass -p "$SSH_PASSWORD" rsync -avz --exclude='.git*' --exclude='node_modules' -e "ssh -o StrictHostKeyChecking=no" ./ mws@20.40.50.186:/home/mws/github
+        
+        # Run commands on the EC2 instance
+        sshpass -p "$SSH_PASSWORD" ssh -o StrictHostKeyChecking=no mws@20.40.50.186 << 'EOF'
+          cd /home/mws/github
+
+          # Check if tmux session already exists and kill it
+          tmux has-session -t mysession 2>/dev/null
+          if [ $? = 0 ]; then
+            tmux kill-session -t mysession
+          fi
+
+          # Install production dependencies
+          npm install --production
+
+          # Start the application in a new tmux session
+          tmux new-session -d -s mysession 'npm start'
+        EOF
+
