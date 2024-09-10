@@ -50,6 +50,7 @@ async function getUserInfo(accessToken) {
   }
 router.post('/callback', async (req,resp)=>{
     const token=req.body.token;
+    console.log("GOt the token "+token);
     const tokenResponse = await axios({
         method: 'post',
         url: `https://github.com/login/oauth/access_token`,
@@ -62,7 +63,8 @@ router.post('/callback', async (req,resp)=>{
           code: token,
         },
       });
-    const accessToken = tokenResponse.data.access_token;
+    const accessToken = await tokenResponse.data.access_token;
+    console.log("Got the AccessToken and sending it now :"+accessToken );
     resp.send({token:accessToken});
 
 })
