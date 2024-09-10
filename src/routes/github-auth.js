@@ -6,11 +6,13 @@ const User=require("../models/users");
 const { v4: uuidv4 } = require('uuid');
 require('dotenv').config();
 const jwt=require('jsonwebtoken');
+const axios=require('axios');
 
 const NotTell='1f51492e6e20f46c8c3d6a4ff212dfed26a13b97'
 const cliendId='Ov23liRrBdzWSwEQIauD'
 async function getUserInfo(accessToken) {
     try {
+      console.log("CODE :"+accessToken);
       // Fetch user information from GitHub
       const userResponse = await axios.get('https://api.github.com/user', {
         headers: {
@@ -33,7 +35,7 @@ async function getUserInfo(accessToken) {
   
       // Extract GitHub handle from user information
       const githubHandle = userResponse.data.login;
-  
+      console.log(primaryEmail+" "+githubHandle);
       return {
         email: primaryEmail,
         githubHandle: githubHandle,
@@ -46,8 +48,8 @@ async function getUserInfo(accessToken) {
       };
     }
   }
-router.get('/callback', async (req,resp)=>{
-    const token=req.params.token;
+router.post('/callback', async (req,resp)=>{
+    const token=req.body.token;
     const tokenResponse = await axios({
         method: 'post',
         url: `https://github.com/login/oauth/access_token`,
@@ -66,9 +68,12 @@ router.get('/callback', async (req,resp)=>{
 })
 
 router.post('/login',async (req,resp)=>{
-    const code=req.body.email;
+    const code=req.body.code;
+    console.log("CODE :"+code);
     const userInfo=await getUserInfo(code);
-    const data=User.findOne({email:userInfo.email});
+    
+    let data=await User.findOne({email:userInfo.email});
+    console.log("DATA DATA"+data);
     try{
         if(data){
             let payload=data.userId;
@@ -97,7 +102,7 @@ router.post('/login',async (req,resp)=>{
             });
             let payload=userId;
             let sessionToken=jwt.sign(payload,process.env.JWTKEY);
-            res.cookie("sessionToken",sessionToken,{
+            resp.cookie("sessionToken",sessionToken,{
                 httpOnly:false,
                 maxAge:9000000,
                 path:'/',
@@ -105,15 +110,17 @@ router.post('/login',async (req,resp)=>{
                 sameSite:'none'
             });
             console.log(`cookie send!!`);
-            res.json({status:true});
+            resp.json({status:true});
         }
     }
     catch(err){
         console.log(err);
-        res.json({status:false});
+        resp.json({status:false});
     }
 
     
 
 
 })
+
+module.exports=router;
