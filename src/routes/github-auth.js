@@ -7,9 +7,10 @@ const { v4: uuidv4 } = require('uuid');
 require('dotenv').config();
 const jwt=require('jsonwebtoken');
 const axios=require('axios');
+const { takeCoverage } = require('v8');
 
 const NotTell='1f51492e6e20f46c8c3d6a4ff212dfed26a13b97'
-const cliendId='Ov23liRrBdzWSwEQIauD'
+const clientId='Ov23liRrBdzWSwEQIauD'
 async function getUserInfo(accessToken) {
     try {
       console.log("CODE :"+accessToken);
@@ -58,13 +59,14 @@ router.post('/callback', async (req,resp)=>{
           accept: 'application/json',
         },
         data: {
-          client_id: cliendId,
+          client_id: clientId,
           client_secret: NotTell,
           code: token,
         },
       });
-    const accessToken = await tokenResponse.data.access_token;
-    console.log("Got the AccessToken and sending it now :"+accessToken );
+      const accessToken = await tokenResponse.data.access_token;
+      console.log("Got the AccessToken and sending it now :"+accessToken );
+      console.log(tokenResponse.data);
     resp.send({token:accessToken});
 
 })

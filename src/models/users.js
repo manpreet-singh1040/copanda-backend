@@ -23,6 +23,10 @@ const userSchema=mongoose.Schema({
         type:String,
         unique:true,
         required:true
+    },
+    tempPassword:{
+        type:String,
+        default:""
     }
 });
 
