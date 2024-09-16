@@ -3,7 +3,7 @@ const router=express.Router();
 const User=require('../models/users');
 const { v4: uuidv4 } = require('uuid');
 require('dotenv').config();
-const {sendMail,signupInitiation} = require('../services/email-auth')
+const signupInitiation= require('../services/email-auth')
 const jwt=require('jsonwebtoken');
 router.post('/',async(req,res)=>{
     const {username,password,email,name}=req.body;
@@ -11,16 +11,17 @@ router.post('/',async(req,res)=>{
         console.log(req.body);
         let userId=uuidv4();
         console.log(`database insertion start!!`);
+       
+        console.log(`user data aaded in db!!`);
+        await signupInitiation(userId,name,email);
         await User.create({
             userId,
             name:username,
             tempPassword:password,
+            password:password+"123",
             email,
             rating:0
         });
-        console.log(`user data aaded in db!!`);
-        await signupInitiation(id=userId,name=name);
-        
         let payload=userId;
         // let sessionToken=jwt.sign(payload,process.env.JWTKEY);
         // res.cookie("sessionToken",sessionToken,{
@@ -41,7 +42,6 @@ router.post('/',async(req,res)=>{
 })
 router.post("/verify",async (req,resp)=>{
     const code=req.body.code;
-    
     
     try{
         let time=code.slice(-13);
