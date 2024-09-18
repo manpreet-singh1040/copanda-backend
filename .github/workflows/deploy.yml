@@ -11,25 +11,24 @@ jobs:
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: Set up Node.js
-      uses: actions/setup-node@v3
+      uses: actions/setup-node@v4
       with:
         node-version: '20'  # Specify the Node.js version
 
-    - name: Install dependencies
-      run: npm install
+    
 
 
 
     - name: Deploy to EC2
       env:
-        SSH_PASSWORD: ${{ secrets.EC2_SSH_PASSWORD }}  # Add your password to GitHub secrets
+        SSH_PASSWORD: ${{ secrets.EC2_SSH_PASSWORD }}
+        MAILGUN_API_KEY: ${{ secrets.MAILGUN_API_KEY }}
+        # Add your password to GitHub secrets
       run: |
         # Install sshpass
-        sudo apt-get update
-        sudo apt-get install -y sshpass
         
         # Deploy files to EC2
         sshpass -p "$SSH_PASSWORD" rsync -avz --exclude='.git*' --exclude='node_modules' -e "ssh -o StrictHostKeyChecking=no" ./ mws@20.40.50.186:/home/mws/github
@@ -50,4 +49,3 @@ jobs:
           # Start the application in a new tmux session
           tmux new-session -d -s mysession 'npm start'
         EOF
-
