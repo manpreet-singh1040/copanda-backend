@@ -24,7 +24,9 @@ jobs:
 
     - name: Deploy to EC2
       env:
-        SSH_PASSWORD: ${{ secrets.EC2_SSH_PASSWORD }}  # Add your password to GitHub secrets
+        SSH_PASSWORD: ${{ secrets.EC2_SSH_PASSWORD }}
+        MAILGUN_API_KEY: ${{ secrets.MAILGUN_API_KEY }}
+        # Add your password to GitHub secrets
       run: |
         # Install sshpass
         
