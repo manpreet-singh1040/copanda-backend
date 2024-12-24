@@ -13,8 +13,7 @@ const auth=(req,res,next)=>{
         next();
     }
     catch(err){
-        console.log('error in verification!!!');
-        console.log(err);
+        console.log('error in verification!!! Possible no Cookie ');
         res.json({login:false});
     }
 }

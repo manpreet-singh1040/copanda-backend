@@ -6,9 +6,10 @@ const execRoute=require('./exec');
 const signupRoute=require('./signup');
 const contestlistRouter=require('./contestlist');
 const contestRoute=require('./contest');
+const github_Outh=require('./github-auth');
 
 router.use("/login",loginRoute);
-
+router.use("/github",github_Outh);
 //router.use("/exec",authMiddleware,execRoute); // for real
 router.use('/signup',signupRoute)
 router.use("/exec",execRoute); // for test only

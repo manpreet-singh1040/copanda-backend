@@ -42,7 +42,7 @@ const fun=async(body)=>{
         }
 };
 
-fun(body);
+// fun(body);
 
 const fun2 = async () => {
     const { exec } = require('child_process');
@@ -90,5 +90,16 @@ EOF"`;
 };
 
 //fun2();
+
+const Redis=require('ioredis');
+let redis=new Redis("rediss://red-ctf0d79u0jms739i0dvg:I5GlLbZtx7npFWE5BOdrSB5zIzt8Sarg@oregon-redis.render.com:6379");
+console.log("redis connected");
+redis.get("test1").then((result)=>{
+    console.log(result===null);
+    redis.disconnect();
+    console.log("redis dis connected!!");
+});
+
+
 
 

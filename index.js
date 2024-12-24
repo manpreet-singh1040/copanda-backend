@@ -6,14 +6,14 @@ const mongoose=require('mongoose');
 const bodyParser = require('body-parser');
 const Router = require("./src/routes/router")
 const cookieParser=require('cookie-parser');
-
+const Redis=require('ioredis');
 
 const app = express();
 
 const cors=require('cors')
 
 // Define your allowed origins
-const allowedOrigins = ['https://code.ddks.live', 'http://localhost:5173'];
+const allowedOrigins = ['https://code.ddks.live', 'http://localhost:5174','http://localhost:5173'];
 
 // Configure the CORS middleware
 app.use(cors({
@@ -34,7 +34,7 @@ const {GetUserByEmail, CreateUser} = require("./src/services/database")
 
 // express server instance
 const port = process.env.PORT || 8080;
-const mongoPort=process.env.MONGO_PORT || 2017;
+const mongoPort=process.env.MONGO_PORT || 27017;
 const mongoUrl=process.env.MONGO_URL || "localhost";
 //basic configs
 /*app.use(cors({
@@ -80,9 +80,16 @@ async function start() {
 
     
 }
+
+
+const redis= new Redis(process.env.REDIS_URL);
+
+
+
 //Listen and serve
 app.listen(port, () => {
-console.log(`Server listening at port:${port}`)
+    console.log(`Server listening at port:${port}`)
 });
+module.exports=redis;
 
 //start();
