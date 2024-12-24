@@ -181,7 +181,7 @@ const fun=async(lang,input,code,subId)=>{
                 console.error('Error killing command:', err);
                 await execPromise(`rm -f ${subId}.${lang} && rm -f ${subId}.txt`);
             }
-        }, 1500);
+        }, 3000);
                 let output = Buffer.alloc(0);
                 stream.on('data',async(chunk)=>{
                     if(flag){
