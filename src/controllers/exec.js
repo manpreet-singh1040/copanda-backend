@@ -2,16 +2,16 @@
 //const exec=require('../services/handleExecution');
 const { v4: uuidv4 } = require('uuid');
 const testexe=async (req,res)=>{
-    const{code,input,lang,userid}=req.body;
+    const{code,input,lang,userid,quesId}=req.body;
     if(code || input || lang || userid)
         {
             try{
                 console.log({code,input,lang,userid});
                 let subId=uuidv4();
-                let resp=fetch(`http://localhost:6996/`,{
+                let resp= fetch(`http://localhost:6996/`,{
                     method:`POST`,
                     headers:{"Content-Type":"application/json"},
-                    body:JSON.stringify({code,input,lang,userid,subId})
+                    body:JSON.stringify({code,input,lang,userid,subId,quesId})
                 });
                 // if(resp.ok)
                 // {

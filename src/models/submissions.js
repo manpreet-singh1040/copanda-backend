@@ -1,4 +1,4 @@
-import { types } from 'pg';
+
 
 const mongoose=require('mongoose');
 

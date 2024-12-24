@@ -141,17 +141,16 @@ const fun=async(lang,input,code,subId)=>{
     fs.writeFileSync(`${subId}.txt`,input);
     console.log(`input file written!!`);
     const tempPool=getPool(lang);
-    const container=getContainer(tempPool);
     return new Promise(async(resolve,reject)=>{
         try{
+        const container=getContainer(tempPool);
         const conId=container.id;
-        const srcPath=`/home/mws/app/server-2/${subId}.${lang}`;
+        const srcPath=`D:/projects/ashleel-backend/server-2/${subId}.${lang}`;
         const desPath=`/Main.${lang}`;
            await execPromise(`docker cp ${srcPath} ${conId}:${desPath}`)
            console.log(`code coplied!!`);
-           await execPromise(`docker cp /home/mws/app/server-2/${subId}.txt ${conId}:/input.txt`);
-           console.log(`input file copied!!`);
-//          
+           await execPromise(`docker cp D:/projects/ashleel-backend/server-2/${subId}.txt ${conId}:/input.txt`);
+           console.log(`input file copied!!`);        
            let qwerty=-1;
            if(lang===`java`)
            {
@@ -234,8 +233,14 @@ app.post("/",async(req,res)=>{
     let rcode=req.body.code;
     let rlang=req.body.lang;
     let rinput=req.body.input;
-    let rsubId=req.body.userid;
+    let rsubId=req.body.subId;
     let op=await fun(rlang,rinput,rcode,rsubId);
+    console.log(`making request to done server!!`);
+    fetch("http://localhost:3000/submission/done",{
+        method:`POST`,
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({code:req.body.code,lang:req.body.lang,input:req.body.input,userId:req.body.userid,output:op,quesId:req.body.quesId,subId:req.body.subId})
+    });
     res.json({output:op.op,status:op.status});
 })
 app.post("/cpp",async(req,res)=>{
