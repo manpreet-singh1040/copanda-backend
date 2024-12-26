@@ -13,7 +13,7 @@ const app = express();
 const cors=require('cors')
 
 // Define your allowed origins
-const allowedOrigins = ['https://code.ddks.live', 'http://localhost:5174','http://localhost:5173'];
+const allowedOrigins = ['https://code.ddks.tech', 'http://localhost:5174','http://localhost:5173'];
 
 // Configure the CORS middleware
 app.use(cors({
@@ -52,8 +52,9 @@ app.use("/", Router);
 
 const mongoConnection=async()=>{
     try{
-
-        await mongoose.connect(`mongodb://${mongoUrl}:${mongoPort}/`);
+        mongo=mongoUrl;
+        // await mongoose.connect(`mongodb://${mongoUrl}:${mongoPort}/`);
+        await mongoose.connect(mongo);
         console.log(`mongo connected!!`);
     }
     catch(err){
