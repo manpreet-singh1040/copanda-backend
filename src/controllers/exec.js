@@ -21,7 +21,7 @@ const testexe=async (req,res)=>{
                     await redis.set(`${userid}`,`TRUE`,`EX`,`150`);
                     console.log({code,input,lang,userid});
                     let subId=uuidv4();
-                    let resp= fetch(`http://localhost:6996/`,{
+                    let resp= fetch(`http://98.70.54.166:6996/`,{
                         method:`POST`,
                         headers:{"Content-Type":"application/json"},
                         body:JSON.stringify({code,input,lang,userid,subId,quesId})

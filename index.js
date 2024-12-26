@@ -13,7 +13,7 @@ const app = express();
 const cors=require('cors')
 
 // Define your allowed origins
-const allowedOrigins = ['https://code.ddks.tech', 'http://localhost:5174','http://localhost:5173'];
+const allowedOrigins = ['https://code.ddks.tech', 'http://localhost:5174','http://localhost:5173','http://98.70.54.166'];
 
 // Configure the CORS middleware
 app.use(cors({
