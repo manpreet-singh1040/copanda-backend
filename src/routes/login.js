@@ -20,7 +20,7 @@ router.post('/',async (req,res)=>{
             path:'/',
             secure:true,
             sameSite:'none',
-            domain:'code.ddks.tech'
+            domain:'.ddks.tech'
         });
         console.log(`cookie send!!`);
         res.json({status:true});
