@@ -20,7 +20,7 @@ router.post('/',async (req,res)=>{
             path:'/',
             secure:true,
             sameSite:'none',
-            domain:'.ashleel-backend.onrender.com'
+            domain:'code.ddks.tech'
         });
         console.log(`cookie send!!`);
         res.json({status:true});
