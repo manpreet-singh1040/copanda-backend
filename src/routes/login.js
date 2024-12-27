@@ -15,7 +15,7 @@ router.post('/',async (req,res)=>{
         let payload=data.userId;
         let sessionToken=jwt.sign(payload,process.env.JWTKEY);
         res.cookie("sessionToken",sessionToken,{
-            httpOnly:false,
+            httpOnly:true,
             maxAge:9000000,
             path:'/',
             secure:true,
