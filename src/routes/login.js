@@ -19,7 +19,8 @@ router.post('/',async (req,res)=>{
             maxAge:9000000,
             path:'/',
             secure:true,
-            sameSite:'none'
+            sameSite:'none',
+            domain:'.ashleel-backend.onrender.com'
         });
         console.log(`cookie send!!`);
         res.json({status:true});
