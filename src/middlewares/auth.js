@@ -8,8 +8,9 @@ const auth=(req,res,next)=>{
     try{
 
         let payload=jwt.verify(req.cookies.sessionToken,process.env.JWTKEY);
-        console.log('verify successful!!');
-        console.log(payload);
+        // console.log('verify successful!!');
+        // console.log(payload);
+        req.body.userId=payload;
         next();
     }
     catch(err){

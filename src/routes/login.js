@@ -20,7 +20,6 @@ router.post('/',async (req,res)=>{
             path:'/',
             secure:true,
             sameSite:'none',
-            domain:'codebackend.vurtex.tech'
         });
         console.log(`cookie send!!`);
         res.json({status:true});
