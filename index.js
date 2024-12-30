@@ -53,8 +53,8 @@ app.use("/", Router);
 const mongoConnection=async()=>{
     try{
         mongo=mongoUrl;
-        await mongoose.connect(`mongodb://${mongoUrl}:${mongoPort}/`);
-        // await mongoose.connect(mongo);
+        // await mongoose.connect(`mongodb://${mongoUrl}:${mongoPort}/`);
+        await mongoose.connect(mongo);
         console.log(`mongo connected!!`);
     }
     catch(err){
