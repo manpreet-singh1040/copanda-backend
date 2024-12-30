@@ -6,9 +6,8 @@ const contestSchema=mongoose.Schema({
         unique:true,
         required:true,
     },
-    constestName:{
+    contestName:{
         type:String,
-        unique:true,
         required:true,
     },
     contestStartDate:{
@@ -19,12 +18,19 @@ const contestSchema=mongoose.Schema({
         type:Date,
         required:true
     },
-    contestAuthor:{
+    contestCreator:{
         type:String,
         required:true
     },
+    contestModerator:{
+        type:[{type:String}],
+        required:true
+    },
     contestQues:{
-        type:[String],
+        type:[{type:String}]
+    },
+    contestAccess:{
+        type:String,
         required:true
     }
 });

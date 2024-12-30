@@ -21,19 +21,22 @@ const userInfoSchema=mongoose.Schema({
         required:true
     },
     submissions:{
-        type:[String],
+        type:[{type:String}],
     },
     contestParticipated:{
-        type:[String]
+        type:[{type:String}]
     },
     problemsSolved:{
-        type:[String],
+        type:[{type:String}],
     },
     bio:{
         type:String
     },
     image:{
         type:String
+    },
+    contestModerator:{
+        type:[{type:String}]
     }
 });
 

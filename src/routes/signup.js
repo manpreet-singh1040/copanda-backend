@@ -29,7 +29,8 @@ router.post('/',async(req,res)=>{
             contestParticipated:[],
             problemsSolved:[],
             bio:"",
-            image:""
+            image:"",
+            contestModerator:[]
         })
         console.log(`user data aaded in db!!`);
         let payload=userId;

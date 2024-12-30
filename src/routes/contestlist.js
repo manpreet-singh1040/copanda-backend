@@ -4,17 +4,17 @@ const Contest=require('../models/contest');
 router.get('/',async(req,res)=>{
     try{
         console.log(`in contestlist router!!`);
-        let data=await Contest.find().limit(1);
+        let data=await Contest.find();
         let newdata=data.map((item,index)=>{
             return {contest_id:item.contestId,
-                contest_name:item.constestName,
+                contest_name:item.contestName,
                 contest_start:item.contestStartDate,
                 contest_end:item.contestEndDate,
                 contest_duration:item.contestEndDate-item.contestStartDate,
-                organizer:item.contestAuthor,
+                organizer:item.contestCreator,
                 no_of_problems:item.contestQues.length};
         })
-        console.log(data);
+        // console.log(data);
         console.log(newdata);
         res.json({status:true,data:newdata});
     }

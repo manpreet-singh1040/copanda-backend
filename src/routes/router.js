@@ -10,10 +10,18 @@ const github_Outh=require('./github-auth');
 const submissionRoute=require('./submission');
 const userDeleteRoute=require('./deleteUser');
 const userInfoRoute=require('./userInfo');
+const createContestRouter=require('./createContest');
+const manageContestRouter=require('./manageContest');
+const createQuestionRouter=require('./createQuestion');
+const problemRouter=require('./problem');
 
 
 
-router.use("/submission",submissionRoute);
+router.use('/problem',problemRouter);
+router.use('/createquestion',createQuestionRouter); //for test in real use auth
+router.use('/managecontest',authMiddleware,manageContestRouter);
+router.use('/createcontest',authMiddleware,createContestRouter);
+router.use("/submission",authMiddleware,submissionRoute);
 router.use("/login",loginRoute);
 router.use("/github",github_Outh);
 router.use("/exec",authMiddleware,execRoute); // for real

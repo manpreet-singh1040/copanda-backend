@@ -28,6 +28,14 @@ const questionsSchema=new mongoose.Schema({
         type:Number,
         required:true
     },
+    inputFormat:{
+        type:String,
+        required:true
+    },
+    outputFormat:{
+        type:String,
+        required:true
+    },
     testIp:{
         type:String
     },
