@@ -6,10 +6,12 @@ const Contest=require('../models/contest');
 const Questions=require('../models/questions');
 const QuestionCompileInfo=require('../models/questionCompileInfo');
 const { v4: uuidv4 } = require('uuid');
+const questions = require('../models/questions');
 router.post('/',async (req,res)=>{
     try{
-        const {quesTitle,quesText,difficulty,description ,score,testIp,testOp,inputFormat,outputFormat,correctCode} =req.body;
+        const {quesTitle,quesText,difficulty,description ,score,testIp,testOp,inputFormat,outputFormat,correctCode,contestId} =req.body;
         let quesId=uuidv4();
+        console.log(`contest id-->  ${contestId}`);
         console.log(`${quesTitle}  ${quesText} ${difficulty} ${description} ${score} ${inputFormat} ${outputFormat} ${correctCode} `);
         await Questions.create({
             quesId,
@@ -30,7 +32,11 @@ router.post('/',async (req,res)=>{
             testCases:[testIp]
         })
        console.log(`finally done !@!@!@@!!@!  added`);
-       
+       await Contest.updateOne(
+        {contestId:contestId},
+        { $push : {contestQues:quesId}}
+       )
+       console.log(`question added in the contest !!`);
         res.json({status:true,quesId});
     }
     catch(err){

@@ -13,7 +13,6 @@ router.post('/',async (req,res)=>{
        await Contest.create({
         contestId,
         contestName,
-        contestAccess,
         contestStartDate:new Date(contestStartDate),
         contestEndDate:new Date(contestEndDate),
         contestCreator:contestCreator.name,

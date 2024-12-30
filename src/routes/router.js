@@ -21,7 +21,7 @@ router.use('/problem',problemRouter);
 router.use('/createquestion',createQuestionRouter); //for test in real use auth
 router.use('/managecontest',authMiddleware,manageContestRouter);
 router.use('/createcontest',authMiddleware,createContestRouter);
-router.use("/submission",authMiddleware,submissionRoute);
+router.use("/submission",submissionRoute);
 router.use("/login",loginRoute);
 router.use("/github",github_Outh);
 router.use("/exec",authMiddleware,execRoute); // for real

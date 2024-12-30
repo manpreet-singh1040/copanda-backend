@@ -4,7 +4,7 @@ const express=require('express');
 const router=express.Router();
 const Submissions=require('../models/submissions');
 const Redis=require('ioredis');
-// 
+const authMiddleware=require('../middlewares/auth');
 const pollRedis= new Redis(process.env.REDIS_URL);
 
 pollRedis.on('connect', () => {
@@ -15,7 +15,7 @@ pollRedis.on('error', (err) => {
     console.log('Redis connection error:', err);
 });
 
-router.post('/',async(req,res)=>{
+router.post('/',authMiddleware,async(req,res)=>{
     try{
         let response=await pollRedis.get(req.body.subId);
         console.log(`polling response for subId${req.body.subId}   ----->  ${response}`);
