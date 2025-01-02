@@ -64,14 +64,20 @@ const input=`5
 
 
 
-const create=(image,pool)=>{
+const create=(image,pool,containerName)=>{
     return new Promise(async(resolve,reject)=>{
         try{
+            await execPromise(`mkdir "D:/projects/ashleel-backend/server-2/${containerName}"`);
             const container=await docker.createContainer({
                 Image:image,
                 Tty:true,
+                name:containerName,
                 HostConfig:{
-                    NetworkMode:'none'
+                    NetworkMode:'none',
+                    CpuQuota: 2.5 * 100000, 
+                    Memory:  256 * 1024 * 1024,
+                    Binds: [`D:/projects/ashleel-backend/server-2/${containerName}:/app:ro`],
+                    ReadonlyRootfs: true, 
                 }
             })
             await container.start();
@@ -90,8 +96,8 @@ const initial=(max)=>{
         try{
             for(let i=0;i<max;i++)
             {
-                await create("povtemp/alpinejava",containerPool.java);
-                await create("povtemp/alpinegcc",containerPool.cpp);
+                await create("povtemp/alpinejava",containerPool.java,`javaCon${i}`);
+                await create("povtemp/alpinegcc",containerPool.cpp,`gcc.${i}`);
             }
             resolve();
         }
@@ -136,21 +142,23 @@ const getPool=(lang)=>{
 
 
 const fun=async(lang,input,code,subId)=>{
-    fs.writeFileSync(`${subId}.${lang}`,code);
-    console.log(`code file written!!`);
-    fs.writeFileSync(`${subId}.txt`,input);
-    console.log(`input file written!!`);
-    const tempPool=getPool(lang);
     try{
+        const tempPool=getPool(lang);
+        const container=getContainer(tempPool);
+        const info= await container.inspect();
+        const dirName=info.Name.startsWith('/') ? info.Name.slice(1) : info.Name;
+        fs.writeFileSync(`D:/projects/ashleel-backend/server-2/${dirName}/Main.${lang}`,code);
+        console.log(`code file written!!`);
+        fs.writeFileSync(`D:/projects/ashleel-backend/server-2/${dirName}/input.txt`,input);
+        console.log(`input file written!!`);
         return new Promise(async(resolve,reject)=>{
             try{
-            const container=getContainer(tempPool);
             const conId=container.id;
-            const srcPath=`D:/projects/ashleel-backend/server-2/${subId}.${lang}`;
-            const desPath=`/Main.${lang}`;
-               await execPromise(`docker cp ${srcPath} ${conId}:${desPath}`)
+            // const srcPath=`D:/projects/ashleel-backend/server-2/${subId}.${lang}`;
+            // const desPath=`/Main.${lang}`;
+            //    await execPromise(`docker cp ${srcPath} ${conId}:${desPath}`)
                console.log(`code coplied!!`);
-               await execPromise(`docker cp D:/projects/ashleel-backend/server-2/${subId}.txt ${conId}:/input.txt`);
+            //    await execPromise(`docker cp D:/projects/ashleel-backend/server-2/${subId}.txt ${conId}:/input.txt`);
                console.log(`input file copied!!`);        
                let qwerty=-1;
                if(lang===`java`)
@@ -165,7 +173,9 @@ const fun=async(lang,input,code,subId)=>{
                {
                 qwerty=2;
                }
-               const cmd=[`javac Main.java && java Main < input.txt && rm Main.java && rm Main.class && rm input.txt`,`g++ Main.cpp -o ${subId} && ./${subId} < input.txt`,`gcc Main.c -o ${subId} && ./${subId} < input.txt`];
+               const shellcmd=[`javac Main.java`,`g++ Main.cpp -o Main`,`gcc Main.c -o Main`];
+               execPromise(` cd D:/projects/ashleel-backend/server-2/${dirName} && ${shellcmd[qwerty]} `);
+               const cmd=[`cd /app && java Main.java< input.txt` , `cd /app && ./Main < input.txt` , `cd /app && ./Main < input.txt`];
                const exec= await container.exec({Cmd:['/bin/sh',`-c`,cmd[qwerty]],AttachStdout:true,AttachStderr:true});
                const stream=await exec.start({Detach:false});
                
@@ -263,22 +273,6 @@ app.post("/",async(req,res)=>{
         res.json();
     }
     
-})
-app.post("/cpp",async(req,res)=>{
-    let rcode=req.body.code;
-    let rlang=req.body.lang;
-    let rinput=req.body.input;
-    let rsubId=req.body.subId;
-    let op=await fun(rlang,rinput,rcode,rsubId);
-    res.json({output:op.op,status:op.status});
-})
-app.post("/c",async(req,res)=>{
-    let rcode=req.body.code;
-    let rlang=req.body.lang;
-    let rinput=req.body.input;
-    let rsubId=req.body.subId;
-    let op=await fun(rlang,rinput,rcode,rsubId);
-    res.json({output:op.op,status:op.status});
 })
 app.get("/",(req,res)=>{
     res.json({mes:"alive"});
