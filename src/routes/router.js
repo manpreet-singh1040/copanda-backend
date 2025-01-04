@@ -14,9 +14,10 @@ const createContestRouter=require('./createContest');
 const manageContestRouter=require('./manageContest');
 const createQuestionRouter=require('./createQuestion');
 const problemRouter=require('./problem');
+const logoutRouter=require('./logout');
 
 
-
+router.use('/logout',logoutRouter);
 router.use('/problem',problemRouter);
 router.use('/createquestion',createQuestionRouter); //for test in real use auth
 router.use('/managecontest',authMiddleware,manageContestRouter);
@@ -35,6 +36,7 @@ router.get("/", (req, res) => {
     res.send('Hello World!')
 })
 router.get('/checklogin',authMiddleware,(req,res)=>{
+    // setTimeout(()=>{res.json({login:true});},5000)
     res.json({login:true});
 })
 

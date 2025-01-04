@@ -6,10 +6,7 @@ const UserInfo=require('../models/userInfo');
 
 router.get('/',async (req,res)=>{
     try{
-        console.log(`deleteing user ${req.body.userId}`)
-        await User.deleteOne({userId:req.body.userId});
-        await UserInfo.deleteOne({userId:req.body.userId});
-        console.log(`user deleted !!`);
+        console.log(`logging out  user ${req.body.userId}`)
         res.cookie("sessionToken","",{
             httpOnly:false,
             maxAge:0,
@@ -23,7 +20,6 @@ router.get('/',async (req,res)=>{
         res.status(500).json({status:false});
     }
 });
-
 
 
 module.exports=router;
