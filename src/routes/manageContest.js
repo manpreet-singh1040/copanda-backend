@@ -138,21 +138,23 @@ router.post('/:id/addmoderator',async (req,res)=>{
         console.log(name);
         console.log(contestId);
         let userDetails=await UserInfo.findOne({name});
+        console.log(userDetails);
         for(let i=0;i<userDetails.contestModerator.length;i++)
         {
-            if(userDetails.contestModerator[i]==name)
+            console.log(`${name} ${userDetails.contestModerator[i]}`);
+            if(userDetails.contestModerator[i]===contestId)
             {
                 throw new Error(`user already moderator !!`);
             }
         }
         await UserInfo.updateOne(
             {name:name},
-            { push$ :{contestModerator:contestId}}
+            { $push :{contestModerator:contestId}}
         )
         console.log(`user added in moderator !`);
         await Contest.updateOne(
             {contestId:contestId},
-            { push$ :{ contestModerator: contestId}}
+            { $push :{ contestModerator: name}}
         )
         console.log(`user added in the contests moderator db also !!`);
     res.json({status:true});
