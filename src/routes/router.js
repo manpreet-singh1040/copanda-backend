@@ -15,8 +15,11 @@ const manageContestRouter=require('./manageContest');
 const createQuestionRouter=require('./createQuestion');
 const problemRouter=require('./problem');
 const logoutRouter=require('./logout');
+const deleteContestRouter=require('./deleteContest');
 
 
+
+router.use('/deletecontest',authMiddleware,deleteContestRouter);
 router.use('/logout',logoutRouter);
 router.use('/problem',problemRouter);
 router.use('/createquestion',createQuestionRouter); //for test in real use auth

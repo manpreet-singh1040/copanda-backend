@@ -6,6 +6,7 @@ const User=require("../models/users");
 router.post('/',async (req,res)=>{
     let body=req.body;
     try{
+        console.log(req.body);
         //to check if user is present in db
         let data=await User.findOne({name:body.username});
         if(data.password!== body.password)

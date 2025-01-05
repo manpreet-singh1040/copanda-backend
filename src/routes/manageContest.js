@@ -20,7 +20,7 @@ router.get('/',async (req,res)=>{
             // console.log(contestIdArray.contestModerator[i]);
             // console.log(`index  ${i} start ----------->`);
             let temp=await Contest.findOne({contestId:contestIdArray.contestModerator[i] });
-            console.log(temp);
+            // console.log(temp);
             contestData.push(temp);
         }
         // console.log(contestData);
@@ -67,6 +67,14 @@ router.get('/:id',async (req,res)=>{
             let temp=await Questions.findOne({quesId:contestData.contestQues[i]})
             quesDetails.push({quesId:temp.quesId,quesTitle:temp.quesTitle});
         }
+        let contestModeratorName=[];
+        for(let i in contestData.contestModerator)
+        {
+            // console.log(i);
+            let Uname= await UserInfo.findOne({userId:contestData.contestModerator[i]});
+            console.log(Uname);
+            contestModeratorName.push(Uname.name);
+        }
         let newcontestData={
             contestId:contestData.contestId,
             contestName:contestData.contestName,
@@ -74,7 +82,7 @@ router.get('/:id',async (req,res)=>{
             contestStartDate:contestData.contestStartDate,
             contestEndDate:contestData.contestEndDate,
             contestCreator:contestData.contestCreator,
-            contestModerator:contestData.contestModerator,
+            contestModerator:contestModeratorName,
             contestQues:quesDetails
         }
             res.json({status:true,data:newcontestData});
@@ -154,7 +162,7 @@ router.post('/:id/addmoderator',async (req,res)=>{
         console.log(`user added in moderator !`);
         await Contest.updateOne(
             {contestId:contestId},
-            { $push :{ contestModerator: name}}
+            { $push :{ contestModerator: userDetails.userId}}
         )
         console.log(`user added in the contests moderator db also !!`);
     res.json({status:true});

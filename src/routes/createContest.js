@@ -16,7 +16,7 @@ router.post('/',async (req,res)=>{
         contestStartDate:new Date(contestStartDate),
         contestEndDate:new Date(contestEndDate),
         contestCreator:contestCreator.name,
-        contestModerator:[contestCreator.name],
+        contestModerator:[contestCreator.userId],
         contestQues:[],
         contestAccess:"Private"
        });
