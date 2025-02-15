@@ -48,10 +48,10 @@ router.post('/done',async(req,res)=>{
         let body=JSON.stringify(req.body);
         let top= await Questions.findOne({quesId:req.body.quesId});
         let testOp=top.testOp;
-        let status=(testOp===req.body.output);
+        let status=(testOp===req.body.output.op);
         console.log(`testop---> ${testOp}  output--->${req.body.output}`);
         console.log(status);
-        if(testOp===req.body.output){
+        if(testOp===req.body.output.op){
             let status=await redis.set(`${req.body.subId}`,`${JSON.stringify({ output : {op:"Successful submission all test cases passed"}})}`,`EX`,`150`);
         }
         else{
@@ -109,7 +109,7 @@ router.post('/done',async(req,res)=>{
             submissionId:req.body.subId,
             quesId:req.body.quesId,
             code:req.body.code,
-            output:req.body.output,
+            output:req.body.output.op,
             lang:req.body.lang,
             userId:req.body.userId
         });
