@@ -16,16 +16,17 @@ const createQuestionRouter=require('./createQuestion');
 const problemRouter=require('./problem');
 const logoutRouter=require('./logout');
 const deleteContestRouter=require('./deleteContest');
-
+const quesSubmissionRouter=require('./quesSubmission');
 
 
 router.use('/deletecontest',authMiddleware,deleteContestRouter);
 router.use('/logout',logoutRouter);
 router.use('/problem',problemRouter);
-router.use('/createquestion',createQuestionRouter); //for test in real use auth
+router.use('/createquestion',authMiddleware,createQuestionRouter); //for test in real use auth
 router.use('/managecontest',authMiddleware,manageContestRouter);
 router.use('/createcontest',authMiddleware,createContestRouter);
 router.use("/submission",submissionRoute);
+router.use('/quessubmission',quesSubmissionRouter);
 router.use("/login",loginRoute);
 router.use("/github",github_Outh);
 router.use("/exec",authMiddleware,execRoute); // for real
@@ -33,7 +34,7 @@ router.use('/signup',signupRoute)
 // router.use("/exec",execRoute); // for test only    
 router.use('/deleteuser',authMiddleware,userDeleteRoute);
 router.use('/userinfo',authMiddleware,userInfoRoute);
-router.use('/contestlist',authMiddleware,contestlistRouter);
+router.use('/contestlist',contestlistRouter);
 router.use('/contest',contestRoute);
 router.get("/", (req, res) => {
     res.send('Hello World!')

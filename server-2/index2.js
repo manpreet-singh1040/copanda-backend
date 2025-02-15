@@ -243,9 +243,10 @@ app.post("/", async (req, res) => {
     let rlang = req.body.lang;
     let rinput = req.body.input;
     let rsubId = req.body.subId;
+    let submit = req.body.submit;
     let op = await fun(rlang, rinput, rcode, rsubId);
-    console.log(`making request to done server!!`);
-    fetch("https://ashleel-backend.onrender.com/submission/done", {
+    console.log(`making request to done server!! `);
+    fetch(`https://ashleel-backend.onrender.com/${ (submit) ? "quessubmission" : "submission" }/done`, {
       method: `POST`,
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -256,11 +257,13 @@ app.post("/", async (req, res) => {
         output: op,
         quesId: req.body.quesId,
         subId: req.body.subId,
+        status:true
       }),
     });
     res.json({ output: op.op, status: op.status });
   } catch (err) {
-    fetch("https://ashleel-backend.onrender.com/submission/done", {
+    let submit = req.body.submit;
+    fetch(`https://ashleel-backend.onrender.com/${ (submit) ? "quessubmission" : "submission" }/done`, {
       method: `POST`,
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({

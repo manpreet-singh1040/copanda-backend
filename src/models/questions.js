@@ -24,6 +24,12 @@ const questionsSchema=new mongoose.Schema({
         type:String,
         required:true
     },
+    totalSubmission:{
+        type:Number,
+    },
+    acceptedSubmission:{
+        type:Number,
+    },
     score:{
         type:Number,
         required:true
@@ -41,6 +47,16 @@ const questionsSchema=new mongoose.Schema({
     },
     testOp:{
         type:String
+    },
+    testIpExample:{
+        type:String
+    },
+    testOpExample:{
+        type:String
+    },
+    visibility:{
+        type:Boolean,
+        required:true
     }
 });
 

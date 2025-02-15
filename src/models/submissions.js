@@ -10,14 +10,9 @@ const submissionSchema=mongoose.Schema({
     },
     quesId:{
         type:String,
-        unique:true,
         required:true,
     },
     code:{
-        type:String,
-        required:true
-    },
-    input:{
         type:String,
         required:true
     },
