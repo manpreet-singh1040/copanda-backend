@@ -50,6 +50,43 @@ router.post('/forcontest',async (req,res)=>{
     }
 });
 
+router.post('/forpractice',async (req,res)=>{
+    try{
+        const {quesTitle,quesText,difficulty,description ,score,testIp,testOp,inputFormat,outputFormat,correctCode} =req.body;
+        let quesId=uuidv4();
+        // console.log(`contest id-->  ${contestId}`);
+        console.log(`${quesTitle}  ${quesText} ${difficulty} ${description} ${score} ${inputFormat} ${outputFormat} ${correctCode} `);
+        await Questions.create({
+            quesId,
+            quesTitle,
+            quesText,
+            difficulty,
+            description,
+            score,
+            testIp,
+            testOp,
+            inputFormat,
+            outputFormat
+        })
+        console.log(`question added in the db !!`);
+        await QuestionCompileInfo.create({
+            quesId,
+            correctCode,
+            testCases:[testIp]
+        })
+       console.log(`finally done !@!@!@@!!@!  added`);
+    //    await Contest.updateOne(
+    //     {contestId:contestId},
+    //     { $push : {contestQues:quesId}}
+    //    )
+       console.log(`question added in the contest !!`);
+        res.json({status:true,quesId});
+    }
+    catch(err){
+        console.log(err);
+        res.status(500).json({status:false});
+    }
+});
 
 
 router.post('/forpractice',async (req,res)=>{

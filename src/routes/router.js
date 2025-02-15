@@ -16,6 +16,7 @@ const createQuestionRouter=require('./createQuestion');
 const problemRouter=require('./problem');
 const logoutRouter=require('./logout');
 const deleteContestRouter=require('./deleteContest');
+const listPublicQuestion=require('./listPublicQuestion');
 const quesSubmissionRouter=require('./quesSubmission');
 
 
@@ -39,6 +40,7 @@ router.use('/contest',contestRoute);
 router.get("/", (req, res) => {
     res.send('Hello World!')
 })
+router.use('/practice',listPublicQuestion);
 router.get('/checklogin',authMiddleware,(req,res)=>{
     // setTimeout(()=>{res.json({login:true});},5000)
     res.json({login:true});
