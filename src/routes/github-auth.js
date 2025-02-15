@@ -8,8 +8,8 @@ require('dotenv').config();
 const jwt=require('jsonwebtoken');
 const axios=require('axios');
 
-const NotTell='1f51492e6e20f46c8c3d6a4ff212dfed26a13b97'
-const cliendId='Ov23liRrBdzWSwEQIauD'
+const NotTell=process.env.GITHUB_NOTELL;
+const cliendId='Ov23liRrBdzWSwEQIauD';
 async function getUserInfo(accessToken) {
     try {
       console.log("CODE :"+accessToken);
