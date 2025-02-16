@@ -6,7 +6,6 @@ const app = express();
 const { exec, spawn } = require("child_process");
 const util = require("util");
 const execPromise = util.promisify(exec);
-
 const os = require("os");
 const { clearTimeout } = require("timers");
 const containerPool = {
@@ -129,34 +128,29 @@ const fun = async (lang, input, code, subId) => {
           `g++ Main.cpp -o Main`,
           `gcc Main.c -o Main`,
         ];
-        await execPromise(
-          ` cd /home/copanda/server-2/${dirName} && ${shellcmd[qwerty]} `
-        );
+        // let compilestdout="";
+        // let compilestderr="";
+        try{
+
+          let op=await execPromise(
+            ` cd /home/copanda/server-2/${dirName} && ${shellcmd[qwerty]} `
+          );
+          console.log(`compilation successfull!!`);
+        }
+        catch(err){
+          console.log(`error in compilation !!`);
+          console.log(err.stderr);
+          resolve({op:err.stderr,status:true});
+          returnContainer(tempPool, container);
+          return;
+        }
         const cmd = [
           `cd /app && java Main.java< input.txt`,
           `cd /app && ./Main < input.txt`,
           `cd /app && ./Main < input.txt`,
         ];
-        //    const exec= await container.exec({Cmd:['/bin/sh',`-c`,cmd[qwerty]],AttachStdout:true,AttachStderr:true});
-        //    const stream=await exec.start({Detach:false});
         let timeout = null;
         let execProcess;
-        // execProcess = exec(`docker exec ${conId} "/bin/sh" -c "${cmd[qwerty]}"`, (err, stdout, stderr) => {
-        //     if (timeout !== null) {
-        //         console.log(stdout);
-        //         console.log(stderr);
-        //         console.log(err);
-        //         clearTimeout(timeout);
-        //         // if (stdout.length === 0) {
-
-        //         returnContainer(tempPool, container);
-        //             resolve({ op: stdout, status: true });
-        //         // }
-        //         // else {
-        //         //     reject({ err: stderr, status: false });
-        //         // }
-        //     }
-        // })
         let op = "";
         let errop = "";
         try {
@@ -176,7 +170,7 @@ const fun = async (lang, input, code, subId) => {
           });
           execProcess.on("close", (code) => {
             if (code == 0) {
-              if (timeout !== null) clearTimeout(timeout);
+              if (timeout !== null) {clearTimeout(timeout);}
               console.log("the op is done with op as --->");
               console.log(op);
               returnContainer(tempPool, container);
@@ -185,7 +179,7 @@ const fun = async (lang, input, code, subId) => {
               console.log("error---> ");
               console.log(errop);
               returnContainer(tempPool, container);
-              resolve({ err: errop, status: false });
+              resolve({ op: errop, status: false });
             }
           });
           timeout = setTimeout(async () => {
@@ -273,7 +267,7 @@ app.post("/", async (req, res) => {
         lang: req.body.lang,
         input: req.body.input,
         userId: req.body.userid,
-        output: { op: "", status: false },
+        output: { op: err, status: false },
         quesId: req.body.quesId,
         subId: req.body.subId,
       }),

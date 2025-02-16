@@ -73,16 +73,27 @@ router.post('/done',async(req,res)=>{
                 }
             );
             let userInfoCurStatus=await UserInfo.findOne({userId:req.body.userId});
-            await UserInfo.updateOne(
-                {userId:req.body.userId},
-                {
-                    $push:{ submissions:req.body.subId },
-                    $addToSet: { problemsSolved: req.body.quesId },
-                    $inc:{
-                        rating: curStatus.score
+            if(userInfoCurStatus.problemsSolved.includes(req.body.quesId)){
+                await UserInfo.updateOne(
+                    {userId:req.body.userId},
+                    {
+                        $push:{ submissions:req.body.subId }
                     }
-                }
-            );
+                );
+            }
+            else{
+
+                await UserInfo.updateOne(
+                    {userId:req.body.userId},
+                    {
+                        $push:{ submissions:req.body.subId },
+                        $addToSet: { problemsSolved: req.body.quesId },
+                        $inc:{
+                            rating: curStatus.score
+                        }
+                    }
+                );
+            }
             res.json({status:true});
         }
         else{
