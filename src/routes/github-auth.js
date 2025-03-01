@@ -7,7 +7,7 @@ const { v4: uuidv4 } = require('uuid');
 require('dotenv').config();
 const jwt=require('jsonwebtoken');
 const axios=require('axios');
-
+const UserInfo=require('../models/userInfo');
 const NotTell=process.env.GITHUB_NOTELL;
 const cliendId='Ov23liRrBdzWSwEQIauD';
 async function getUserInfo(accessToken) {
@@ -102,6 +102,18 @@ router.post('/login',async (req,resp)=>{
                 email,
                 rating:0
             });
+            await UserInfo.create({
+            userId,
+            name:handle,
+            email,
+            rating:0,
+            submissions:[],
+            contestParticipated:[],
+            problemsSolved:[],
+            bio:"",
+            image:"",
+            contestModerator:[]
+             })
             let payload=userId;
             let sessionToken=jwt.sign(payload,process.env.JWTKEY);
             resp.cookie("sessionToken",sessionToken,{
