@@ -113,8 +113,7 @@ To deploy the backend:
 
 ## Screenshots
 ![CoPanda Homepage](assets/homepage.png)
-![Contest Page](assets/contest.png)
-![Submission Page](assets/submission.png)
+![codeeditor](assets/codeeditor.png)
 
 ## Contributing
 Contributions are welcome! Feel free to fork the repository, create a new branch, and submit a pull request.
