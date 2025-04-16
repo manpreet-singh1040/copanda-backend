@@ -2,6 +2,9 @@
 
 CoPanda is a coding contest platform that allows users to participate in competitive programming contests. This repository contains the backend code for CoPanda, built using Node.js and Express, with MongoDB as the database. The backend manages user authentication, contest management, problem statements, and code execution using Docker.
 
+## 📌 Architecture Overview
+![Architecture](./assets/design.png)
+
 ## Features
 - User authentication and authorization
 - Contest creation and management
