@@ -2,6 +2,8 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const Docker = require("dockerode");
 const fs = require("fs");
+const dotenv = require("dotenv");
+dotenv.config();
 const app = express();
 const { exec, spawn } = require("child_process");
 const util = require("util");
@@ -33,7 +35,7 @@ const input = `5
 const create = (image, pool, containerName) => {
   return new Promise(async (resolve, reject) => {
     try {
-      await execPromise(`mkdir "/home/copanda/server-2/${containerName}"`);
+      await execPromise(`mkdir "${process.env.ROOT_DIR}/${containerName}"`);
       const container = await docker.createContainer({
         Image: image,
         Tty: true,
@@ -42,7 +44,7 @@ const create = (image, pool, containerName) => {
           NetworkMode: "none",
           CpuQuota: 2.5 * 100000,
           Memory: 256 * 1024 * 1024,
-          Binds: [`/home/copanda/server-2/${containerName}:/app:ro`],
+          Binds: [`${process.env.ROOT_DIR}/${containerName}:/app:ro`],
           ReadonlyRootfs: true,
         },
       });
@@ -100,9 +102,9 @@ const fun = async (lang, input, code, subId) => {
     const container = getContainer(tempPool);
     const info = await container.inspect();
     const dirName = info.Name.startsWith("/") ? info.Name.slice(1) : info.Name;
-    fs.writeFileSync(`/home/copanda/server-2/${dirName}/Main.${lang}`, code);
+    fs.writeFileSync(`${process.env.ROOT_DIR}/${dirName}/Main.${lang}`, code);
     console.log(`code file written!!`);
-    fs.writeFileSync(`/home/copanda/server-2/${dirName}/input.txt`, input);
+    fs.writeFileSync(`${process.env.ROOT_DIR}/${dirName}/input.txt`, input);
     console.log(`input file written!!`);
     return new Promise(async (resolve, reject) => {
       try {
@@ -133,7 +135,7 @@ const fun = async (lang, input, code, subId) => {
         try{
 
           let op=await execPromise(
-            ` cd /home/copanda/server-2/${dirName} && ${shellcmd[qwerty]} `
+            ` cd ${process.env.ROOT_DIR}/${dirName} && ${shellcmd[qwerty]} `
           );
           console.log(`compilation successfull!!`);
         }
@@ -240,7 +242,7 @@ app.post("/", async (req, res) => {
     let submit = req.body.submit;
     let op = await fun(rlang, rinput, rcode, rsubId);
     console.log(`making request to done server!! `);
-    fetch(`https://ashleel-backend.onrender.com/${ (submit) ? "quessubmission" : "submission" }/done`, {
+    fetch(`${process.env.SERVER_1_URL}/${ (submit) ? "quessubmission" : "submission" }/done`, {
       method: `POST`,
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -257,7 +259,7 @@ app.post("/", async (req, res) => {
     res.json({ output: op.op, status: op.status });
   } catch (err) {
     let submit = req.body.submit;
-    fetch(`https://ashleel-backend.onrender.com/${ (submit) ? "quessubmission" : "submission" }/done`, {
+    fetch(`${process.env.SERVER_1_URL}/${ (submit) ? "quessubmission" : "submission" }/done`, {
       method: `POST`,
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -281,6 +283,6 @@ app.get("/", (req, res) => {
   res.json({ mes: "alive" });
 });
 
-app.listen(6996, () => {
-  console.log(`file exe server is listening at port 6996`);
+app.listen(process.env.PORT, () => {
+  console.log(`file exe server is listening at port ${process.env.PORT}`);
 });
