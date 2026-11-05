@@ -3,12 +3,15 @@ const express=require('express');
 const router=express.Router();
 const jwt=require('jsonwebtoken');
 const User=require("../models/users");
+
+
 router.post('/',async (req,res)=>{
     let body=req.body;
     try{
         console.log(req.body);
         //to check if user is present in db
         let data=await User.findOne({name:body.username});
+        console.log(data);
         if(data.password!== body.password)
         {
             throw new Error(`password not matched!!`);

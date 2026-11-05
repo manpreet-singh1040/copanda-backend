@@ -40,13 +40,15 @@ router.post('/',authMiddleware,async(req,res)=>{
 router.post('/done',async(req,res)=>{
     try{
         console.log("request recieved in sub done!!");
-        console.log(`the sub done the key name is ${req.body.subId}`);
+        console.log(`the sub done the key name is ${req.body.jobId}`);
         console.log(`the result from server-2 is ${req.body}`);
         let redis=new Redis(process.env.REDIS_URL);
         let body=JSON.stringify(req.body);
-        let status=await redis.set(`${req.body.subId}`,`${body}`,`EX`,`150`);
+        let status=await redis.set(`${req.body.jobId}`,`${body}`,`EX`,`150`);
         await redis.del(req.body.userId);
         console.log('op set in redis')
+        console.log('body is',body);
+        console.log(`jobId is ${req.body.jobId}`);
         redis.disconnect();
         if(status==="OK")
         {

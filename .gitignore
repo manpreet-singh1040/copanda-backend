@@ -1,3 +1,6 @@
 node_modules/
 .env
 package-lock.json
+./server-2/node_modules/
+./server-2/.env
+./server-2/package-lock.json

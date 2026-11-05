@@ -28,9 +28,7 @@ app.use(cors({
 }));
 
 
-//internal dependencies
-const runMigrations = require("./src/db/migrations/migrations");
-const {GetUserByEmail, CreateUser} = require("./src/services/database")
+
 
 // express server instance
 const port = process.env.PORT || 8080;

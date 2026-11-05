@@ -5,6 +5,8 @@ const fs = require("fs");
 const dotenv = require("dotenv");
 dotenv.config();
 const app = express();
+const Redis=require('ioredis');
+const redisQueueName = 'JOB_QUEUE';
 const { exec, spawn } = require("child_process");
 const util = require("util");
 const execPromise = util.promisify(exec);
@@ -225,64 +227,106 @@ const fun1 = async () => {
     console.log(`containers are ready!`);
     // let op = await fun(lang, input, code, "abcd");
     // console.log(op);
+    for(let i=0;i<2;i++){
+      workerProcess(i);
+    }
   } catch (err) {
     console.log(err);
   }
 };
+
+async function workerProcess(workerId){
+  const redis=new Redis(process.env.REDIS_URL);
+  console.log(`Worker ${workerId} started and waiting for jobs...`);
+  while(true){
+    const jobData=await redis.brpop(redisQueueName,0);
+    if(jobData){
+      const jobPayload=JSON.parse(jobData[1]);
+      const {code,input,lang,userId,quesId,jobId}=jobPayload;
+      console.log(`Worker ${workerId} processing job for user ${userId}`);
+      try{
+        let op=await fun(lang,input,code,quesId);
+        console.log(`Worker ${workerId} finished processing job id ${jobId} for user ${userId}`);
+        console.log(`Output: ${JSON.stringify(op)}`);
+        fetch(`${process.env.SERVER_1_URL}/submission/done`,{
+          method:`POST`,
+          headers:{"Content-Type":"application/json"},
+          body:JSON.stringify({code,lang,input,userId,output:op,quesId,jobId,status:true})
+        });
+        await redis.del(userId);
+      }
+      catch(err){
+        console.log(`Worker ${workerId} encountered an error while processing job for user ${userId}`);
+        console.log(err);
+        fetch(`${process.env.SERVER_1_URL}/submission/done`,{
+          method:`POST`,
+          headers:{"Content-Type":"application/json"},
+          body:JSON.stringify({code,lang,input,userId,output:{op:err,status:false},quesId,status:false})
+        });
+        await redis.del(userId);
+      }
+    }
+  }
+}
+
 fun1();
 
-app.use(bodyParser.json());
+// app.use(bodyParser.json());
 
-app.post("/", async (req, res) => {
-  try {
-    let rcode = req.body.code;
-    let rlang = req.body.lang;
-    let rinput = req.body.input;
-    let rsubId = req.body.subId;
-    let submit = req.body.submit;
-    let op = await fun(rlang, rinput, rcode, rsubId);
-    console.log(`making request to done server!! `);
-    fetch(`${process.env.SERVER_1_URL}/${ (submit) ? "quessubmission" : "submission" }/done`, {
-      method: `POST`,
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        code: req.body.code,
-        lang: req.body.lang,
-        input: req.body.input,
-        userId: req.body.userid,
-        output: op,
-        quesId: req.body.quesId,
-        subId: req.body.subId,
-        status:true
-      }),
-    });
-    res.json({ output: op.op, status: op.status });
-  } catch (err) {
-    let submit = req.body.submit;
-    fetch(`${process.env.SERVER_1_URL}/${ (submit) ? "quessubmission" : "submission" }/done`, {
-      method: `POST`,
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        status: false,
-        mes: `No Free Compiler`,
-        code: req.body.code,
-        lang: req.body.lang,
-        input: req.body.input,
-        userId: req.body.userid,
-        output: { op: err, status: false },
-        quesId: req.body.quesId,
-        subId: req.body.subId,
-      }),
-    });
-    console.log(`No free compiler`);
-    console.log(err);
-    res.json();
-  }
-});
-app.get("/", (req, res) => {
-  res.json({ mes: "alive" });
-});
+// app.post("/", async (req, res) => {
+//   try {
+//     let rcode = req.body.code;
+//     let rlang = req.body.lang;
+//     let rinput = req.body.input;
+//     let rsubId = req.body.subId;
+//     let submit = req.body.submit;
+//     let op = await fun(rlang, rinput, rcode, rsubId);
+//     console.log(`making request to done server!! `);
+//     fetch(`${process.env.SERVER_1_URL}/${ (submit) ? "quessubmission" : "submission" }/done`, {
+//       method: `POST`,
+//       headers: { "Content-Type": "application/json" },
+//       body: JSON.stringify({
+//         code: req.body.code,
+//         lang: req.body.lang,
+//         input: req.body.input,
+//         userId: req.body.userid,
+//         output: op,
+//         quesId: req.body.quesId,
+//         subId: req.body.subId,
+//         status:true
+//       }),
+//     });
+//     res.json({ output: op.op, status: op.status });
+//   } catch (err) {
+//     let submit = req.body.submit;
+//     fetch(`${process.env.SERVER_1_URL}/${ (submit) ? "quessubmission" : "submission" }/done`, {
+//       method: `POST`,
+//       headers: { "Content-Type": "application/json" },
+//       body: JSON.stringify({
+//         status: false,
+//         mes: `No Free Compiler`,
+//         code: req.body.code,
+//         lang: req.body.lang,
+//         input: req.body.input,
+//         userId: req.body.userid,
+//         output: { op: err, status: false },
+//         quesId: req.body.quesId,
+//         subId: req.body.subId,
+//       }),
+//     });
+//     console.log(`No free compiler`);
+//     console.log(err);
+//     res.json();
+//   }
+// });
+// app.get("/", (req, res) => {
+//   res.json({ mes: "alive" });
+// });
 
-app.listen(process.env.PORT, () => {
-  console.log(`file exe server is listening at port ${process.env.PORT}`);
-});
+// app.listen(process.env.PORT, () => {
+//   console.log(`file exe server is listening at port ${process.env.PORT}`);
+// });
+
+
+
+
