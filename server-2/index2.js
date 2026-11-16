@@ -1,332 +1,327 @@
-const express = require("express");
-const bodyParser = require("body-parser");
-const Docker = require("dockerode");
-const fs = require("fs");
+
+const Redis = require("ioredis");
+const http = require("http");
 const dotenv = require("dotenv");
+
 dotenv.config();
-const app = express();
-const Redis=require('ioredis');
-const redisQueueName = 'JOB_QUEUE';
-const { exec, spawn } = require("child_process");
-const util = require("util");
-const execPromise = util.promisify(exec);
-const os = require("os");
-const { clearTimeout } = require("timers");
-const containerPool = {
-  java: [],
-  cpp: [],
+
+const SERVER_URL = process.env.SERVER_1_URL;
+const REDIS_URL = process.env.REDIS_URL;
+
+// Each container runs exactly ONE language worker.
+const LANGUAGE = (process.env.LANGUAGE || "").toLowerCase().trim();
+
+const DAEMON_SOCKET =
+  process.env.DAEMON_SOCKET || "/var/run/daemon/daemon.sock";
+
+const EXECUTION_TIMEOUT_MS = Number(
+  process.env.EXECUTION_TIMEOUT_MS || 2000
+);
+
+const DAEMON_REQUEST_TIMEOUT_MS = Number(
+  process.env.DAEMON_REQUEST_TIMEOUT_MS || 15000
+);
+
+const LANGUAGE_CONFIG = {
+  cpp: { queue: "CPP_QUEUE" },
+  c: { queue: "C_QUEUE" },
+  python: { queue: "PYTHON_QUEUE" },
+  js: { queue: "JS_QUEUE" },
+  java: { queue: "JAVA_QUEUE" },
 };
-let docker;
-if (os.platform() === "win32") {
-  docker = new Docker({ socketPath: "//./pipe/docker_engine" });
-} else {
-  docker = new Docker({ socketPath: "/var/run/docker.sock" });
+
+const LANGUAGE_ALIASES = {
+  cpp: "cpp",
+  "c++": "cpp",
+  c: "c",
+  python: "python",
+  py: "python",
+  js: "js",
+  javascript: "js",
+  java: "java",
+};
+
+function normalizeLanguage(language) {
+  return LANGUAGE_ALIASES[
+    String(language || "").toLowerCase().trim()
+  ] || null;
 }
 
-const lang = `cpp`;
-const code = `
-#include<iostream>
-int  main(){
-std::cout<<"Hello"<<std::endl;
-return 0;
+function validateConfiguration() {
+  if (!SERVER_URL) {
+    throw new Error("SERVER_1_URL is required");
+  }
+
+  if (!REDIS_URL) {
+    throw new Error("REDIS_URL is required");
+  }
+
+  if (!LANGUAGE_CONFIG[LANGUAGE]) {
+    throw new Error(
+      `Unsupported LANGUAGE="${LANGUAGE}". ` +
+      `Supported: ${Object.keys(LANGUAGE_CONFIG).join(", ")}`
+    );
+  }
+
+  if (!DAEMON_SOCKET) {
+    throw new Error("DAEMON_SOCKET is required");
+  }
 }
-`;
-const input = `5
-10`;
 
-const create = (image, pool, containerName) => {
-  return new Promise(async (resolve, reject) => {
-    try {
-      await execPromise(`mkdir "${process.env.ROOT_DIR}/${containerName}"`);
-      const container = await docker.createContainer({
-        Image: image,
-        Tty: true,
-        name: containerName,
-        HostConfig: {
-          NetworkMode: "none",
-          CpuQuota: 2.5 * 100000,
-          Memory: 256 * 1024 * 1024,
-          Binds: [`${process.env.ROOT_DIR}/${containerName}:/app:ro`],
-          ReadonlyRootfs: true,
-        },
-      });
-      await container.start();
-      pool.push(container);
-      resolve();
-    } catch (err) {
-      reject(err);
-    }
-  });
-};
-
-const initial = (max) => {
-  return new Promise(async (resolve, reject) => {
-    try {
-      for (let i = 0; i < max; i++) {
-        await create("povtemp/alpinejava", containerPool.java, `javaCon${i}`);
-        await create("povtemp/alpinegcc", containerPool.cpp, `gcc.${i}`);
-      }
-      resolve();
-    } catch (err) {
-      console.log(err);
-      reject(err);
-    }
-  });
-};
-
-const getContainer = (pool) => {
-  if (pool.length == 0) {
-    throw new Error("No available containers");
-  }
-  return pool.pop();
-};
-const returnContainer = async (pool, container) => {
-  const data = await container.inspect();
-  if (!data.State.Running) {
-    await container.start();
-  }
-  pool.push(container);
-};
-
-const getPool = (lang) => {
-  if (lang === `java`) {
-    return containerPool.java;
-  } else if (lang === `cpp` || lang === `c`) {
-    return containerPool.cpp;
-  } else {
-    return null;
-  }
-};
-
-const fun = async (lang, input, code, subId) => {
-  try {
-    const tempPool = getPool(lang);
-    const container = getContainer(tempPool);
-    const info = await container.inspect();
-    const dirName = info.Name.startsWith("/") ? info.Name.slice(1) : info.Name;
-    fs.writeFileSync(`${process.env.ROOT_DIR}/${dirName}/Main.${lang}`, code);
-    console.log(`code file written!!`);
-    fs.writeFileSync(`${process.env.ROOT_DIR}/${dirName}/input.txt`, input);
-    console.log(`input file written!!`);
-    return new Promise(async (resolve, reject) => {
-      try {
-        const conId = container.id;
-        // const srcPath=`D:/projects/ashleel-backend/server-2/${subId}.${lang}`;
-        // const desPath=`/Main.${lang}`;
-        //    await execPromise(`docker cp ${srcPath} ${conId}:${desPath}`)
-        console.log(`code coplied!!`);
-        //    await execPromise(`docker cp D:/projects/ashleel-backend/server-2/${subId}.txt ${conId}:/input.txt`);
-        console.log(`input file copied!!`);
-        let qwerty = -1;
-        if (lang === `java`) {
-          qwerty = 0;
-        }
-        if (lang === `cpp`) {
-          qwerty = 1;
-        }
-        if (lang === `c`) {
-          qwerty = 2;
-        }
-        const shellcmd = [
-          `javac Main.java`,
-          `g++ Main.cpp -o Main`,
-          `gcc Main.c -o Main`,
-        ];
-        // let compilestdout="";
-        // let compilestderr="";
-        try{
-
-          let op=await execPromise(
-            ` cd ${process.env.ROOT_DIR}/${dirName} && ${shellcmd[qwerty]} `
-          );
-          console.log(`compilation successfull!!`);
-        }
-        catch(err){
-          console.log(`error in compilation !!`);
-          console.log(err.stderr);
-          resolve({op:err.stderr,status:true});
-          returnContainer(tempPool, container);
-          return;
-        }
-        const cmd = [
-          `cd /app && java Main.java< input.txt`,
-          `cd /app && ./Main < input.txt`,
-          `cd /app && ./Main < input.txt`,
-        ];
-        let timeout = null;
-        let execProcess;
-        let op = "";
-        let errop = "";
-        try {
-          execProcess = spawn("docker", [
-            "exec",
-            conId,
-            "/bin/sh",
-            "-c",
-            cmd[qwerty],
-          ]);
-          execProcess.stdout.setEncoding("utf-8");
-          execProcess.stdout.on("data", (data) => {
-            op = op + data;
-          });
-          execProcess.stderr.on("data", (data) => {
-            errop += data;
-          });
-          execProcess.on("close", (code) => {
-            if (code == 0) {
-              if (timeout !== null) {clearTimeout(timeout);}
-              console.log("the op is done with op as --->");
-              console.log(op);
-              returnContainer(tempPool, container);
-              resolve({ op, status: true });
-            } else {
-              console.log("error---> ");
-              console.log(errop);
-              returnContainer(tempPool, container);
-              resolve({ op: errop, status: false });
-            }
-          });
-          timeout = setTimeout(async () => {
-            try {
-              console.log("in timeout!!");
-              flag = false;
-              execProcess.kill();
-              resolve({ op: "TLE", status: false });
-              await container.kill();
-              returnContainer(tempPool, container);
-              //await execPromise(`rm -f ${subId}.${lang} && rm -f ${subId}.txt`);
-            } catch (err) {
-              console.error("Error killing command:", err);
-              //await execPromise(`rm -f ${subId}.${lang} && rm -f ${subId}.txt`);
-            }
-          }, 3000);
-        } catch (err) {
-            console.log("error in exec of cmd !!");
-            console.log(err);
-            returnContainer(tempPool, container);
-            reject(err);
-        }
-
-        // let flag = true;
-      } catch (err) {
-        console.log("error in i do not know what !!!!");
-        console.log(err);
-        returnContainer(tempPool, container);
-        reject(err);
-        //await execPromise(`rm -f ${subId}.${lang} && rm -f ${subId}.txt`);
-      }
+function executeCode(job) {
+  return new Promise((resolve, reject) => {
+    const payload = JSON.stringify({
+      language: LANGUAGE,
+      source_code: job.code,
+      stdin: job.input || "",
+      timeout_ms: EXECUTION_TIMEOUT_MS,
     });
-  } catch (err) {
-    console.log(err);
-    // reject(err);
-  }
-};
-const fun1 = async () => {
-  try {
-    await initial(1);
-    console.log(`containers are ready!`);
-    // let op = await fun(lang, input, code, "abcd");
-    // console.log(op);
-    for(let i=0;i<2;i++){
-      workerProcess(i);
-    }
-  } catch (err) {
-    console.log(err);
-  }
-};
 
-async function workerProcess(workerId){
-  const redis=new Redis(process.env.REDIS_URL);
-  console.log(`Worker ${workerId} started and waiting for jobs...`);
-  while(true){
-    const jobData=await redis.brpop(redisQueueName,0);
-    if(jobData){
-      const jobPayload=JSON.parse(jobData[1]);
-      const {code,input,lang,userId,quesId,jobId}=jobPayload;
-      console.log(`Worker ${workerId} processing job for user ${userId}`);
-      try{
-        let op=await fun(lang,input,code,quesId);
-        console.log(`Worker ${workerId} finished processing job id ${jobId} for user ${userId}`);
-        console.log(`Output: ${JSON.stringify(op)}`);
-        fetch(`${process.env.SERVER_1_URL}/submission/done`,{
-          method:`POST`,
-          headers:{"Content-Type":"application/json"},
-          body:JSON.stringify({code,lang,input,userId,output:op,quesId,jobId,status:true})
+    const req = http.request(
+      {
+        socketPath: DAEMON_SOCKET,
+        path: "/execute",
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Content-Length": Buffer.byteLength(payload),
+        },
+      },
+      (res) => {
+        let data = "";
+
+        res.setEncoding("utf8");
+
+        res.on("data", (chunk) => {
+          data += chunk;
         });
-        await redis.del(userId);
+
+        res.on("end", () => {
+          let result;
+
+          try {
+            result = JSON.parse(data);
+          } catch {
+            return reject(
+              new Error("Daemon returned invalid JSON")
+            );
+          }
+
+          if (res.statusCode !== 200) {
+            return reject(
+              new Error(
+                result.error || `Daemon HTTP ${res.statusCode}`
+              )
+            );
+          }
+
+          resolve(result);
+        });
+
+        res.on("error", reject);
       }
-      catch(err){
-        console.log(`Worker ${workerId} encountered an error while processing job for user ${userId}`);
-        console.log(err);
-        fetch(`${process.env.SERVER_1_URL}/submission/done`,{
-          method:`POST`,
-          headers:{"Content-Type":"application/json"},
-          body:JSON.stringify({code,lang,input,userId,output:{op:err,status:false},quesId,status:false})
-        });
+    );
+
+    req.setTimeout(DAEMON_REQUEST_TIMEOUT_MS, () => {
+      req.destroy(new Error("Daemon request timed out"));
+    });
+
+    req.on("error", reject);
+    req.end(payload);
+  });
+}
+
+function formatOutput(result) {
+  const success = result.status === "OK";
+
+  return {
+    op: success
+      ? result.stdout || ""
+      : result.stderr || result.error || result.status,
+
+    status: success,
+
+    daemonStatus: result.status,
+    stdout: result.stdout || "",
+    stderr: result.stderr || "",
+    exitCode: result.exit_code,
+
+    compileTimeMs: result.compile_time_ms,
+    wallTimeMs: result.wall_time_ms,
+    cpuTimeMs: result.cpu_time_ms,
+    maxMemoryKB: result.max_memory_kb,
+
+    error: result.error || null,
+  };
+}
+
+async function notifyServer(payload) {
+  const response = await fetch(
+    `${SERVER_URL}/submission/done`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+      signal: AbortSignal.timeout(15000),
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error(`Backend HTTP ${response.status}`);
+  }
+}
+
+async function processJob(job, redis, workerName) {
+  const {
+    code,
+    input,
+    userId,
+    quesId,
+    jobId,
+  } = job;
+
+  console.log(`[${workerName}] Executing job ${jobId}`);
+
+  let output;
+
+  try {
+    const normalizedJobLanguage = normalizeLanguage(job.lang);
+
+    if (normalizedJobLanguage !== LANGUAGE) {
+      throw new Error(
+        `Language mismatch: worker=${LANGUAGE}, job=${job.lang}`
+      );
+    }
+
+    if (typeof code !== "string" || !code.trim()) {
+      throw new Error("Job source code is empty");
+    }
+
+    const result = await executeCode(job);
+
+    output = formatOutput(result);
+
+    console.log(
+      `[${workerName}] Job ${jobId}: ${result.status}`
+    );
+  } catch (err) {
+    console.error(
+      `[${workerName}] Execution error:`,
+      err
+    );
+
+    output = {
+      op: err.message,
+      status: false,
+      error: err.message,
+    };
+  }
+
+  try {
+    await notifyServer({
+      code,
+      lang: LANGUAGE,
+      input: input || "",
+      userId,
+      output,
+      quesId,
+      jobId,
+      status: true,
+    });
+
+    console.log(
+      `[${workerName}] Job ${jobId} delivered`
+    );
+  } catch (err) {
+    console.error(
+      `[${workerName}] Failed to notify backend:`,
+      err
+    );
+
+    // Production improvement:
+    // Persist failed callbacks to a retry queue.
+  } finally {
+    if (userId) {
+      try {
         await redis.del(userId);
+      } catch (err) {
+        console.error(
+          `[${workerName}] Failed to release user lock:`,
+          err
+        );
       }
     }
   }
 }
 
-fun1();
+async function startWorker() {
+  validateConfiguration();
 
-// app.use(bodyParser.json());
+  const config = LANGUAGE_CONFIG[LANGUAGE];
+  const workerName =
+    `${LANGUAGE}-worker-${process.env.WORKER_ID || "1"}`;
 
-// app.post("/", async (req, res) => {
-//   try {
-//     let rcode = req.body.code;
-//     let rlang = req.body.lang;
-//     let rinput = req.body.input;
-//     let rsubId = req.body.subId;
-//     let submit = req.body.submit;
-//     let op = await fun(rlang, rinput, rcode, rsubId);
-//     console.log(`making request to done server!! `);
-//     fetch(`${process.env.SERVER_1_URL}/${ (submit) ? "quessubmission" : "submission" }/done`, {
-//       method: `POST`,
-//       headers: { "Content-Type": "application/json" },
-//       body: JSON.stringify({
-//         code: req.body.code,
-//         lang: req.body.lang,
-//         input: req.body.input,
-//         userId: req.body.userid,
-//         output: op,
-//         quesId: req.body.quesId,
-//         subId: req.body.subId,
-//         status:true
-//       }),
-//     });
-//     res.json({ output: op.op, status: op.status });
-//   } catch (err) {
-//     let submit = req.body.submit;
-//     fetch(`${process.env.SERVER_1_URL}/${ (submit) ? "quessubmission" : "submission" }/done`, {
-//       method: `POST`,
-//       headers: { "Content-Type": "application/json" },
-//       body: JSON.stringify({
-//         status: false,
-//         mes: `No Free Compiler`,
-//         code: req.body.code,
-//         lang: req.body.lang,
-//         input: req.body.input,
-//         userId: req.body.userid,
-//         output: { op: err, status: false },
-//         quesId: req.body.quesId,
-//         subId: req.body.subId,
-//       }),
-//     });
-//     console.log(`No free compiler`);
-//     console.log(err);
-//     res.json();
-//   }
-// });
-// app.get("/", (req, res) => {
-//   res.json({ mes: "alive" });
-// });
+  const redis = new Redis(REDIS_URL, {
+    maxRetriesPerRequest: null,
+    enableReadyCheck: true,
+  });
 
-// app.listen(process.env.PORT, () => {
-//   console.log(`file exe server is listening at port ${process.env.PORT}`);
-// });
+  redis.on("error", (err) => {
+    console.error(`[${workerName}] Redis error:`, err);
+  });
 
+  console.log("----------------------------------");
+  console.log(`Worker:       ${workerName}`);
+  console.log(`Language:     ${LANGUAGE}`);
+  console.log(`Queue:        ${config.queue}`);
+  console.log(`Daemon:       ${DAEMON_SOCKET}`);
+  console.log("----------------------------------");
 
+  try {
+    await redis.ping();
 
+    console.log(`[${workerName}] Connected to Redis`);
 
+    while (true) {
+      try {
+        const jobData = await redis.brpop(config.queue, 0);
+
+        if (!jobData) {
+          continue;
+        }
+
+        let job;
+
+        try {
+          job = JSON.parse(jobData[1]);
+        } catch (err) {
+          console.error(
+            `[${workerName}] Invalid job JSON:`,
+            err
+          );
+          continue;
+        }
+
+        await processJob(job, redis, workerName);
+      } catch (err) {
+        console.error(
+          `[${workerName}] Worker loop error:`,
+          err
+        );
+
+        await new Promise((resolve) =>
+          setTimeout(resolve, 2000)
+        );
+      }
+    }
+  } finally {
+    await redis.quit();
+  }
+}
+
+startWorker().catch((err) => {
+  console.error("Worker startup failed:", err);
+  process.exit(1);
+});
