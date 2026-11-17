@@ -1,0 +1,12 @@
+services:
+  java-daemon:
+    image: java-daemon:latest
+    container_name: java-daemon-1
+    restart: unless-stopped
+    environment:
+      DAEMON_LANGUAGE: java
+      DAEMON_SOCKET_PATH: /var/run/daemon/daemon.sock
+      DAEMON_SOCKET_GID: "1000"
+      WORK_BASE_DIR: /sandbox/work
+    volumes:
+      - ./sockets/java:/var/run/daemon
