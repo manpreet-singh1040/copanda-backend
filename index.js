@@ -13,7 +13,7 @@ const app = express();
 const cors=require('cors')
 
 // Define your allowed origins
-const allowedOrigins = ['https://browser-ide-frontend.pages.dev'];
+const allowedOrigins = ['https://browser-ide-frontend.pages.dev','http://localhost:5173'];
 
 // Configure the CORS middleware
 app.use(cors({
