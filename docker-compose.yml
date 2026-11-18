@@ -1,19 +1,29 @@
-
 services:
-    mongo:
-       image: mongo
-       networks: 
-          - server-network
-       ports:
-          - "27017:27017"
-       volumes:
-          - ./mongoconvol:/data/db
-    server:
-       image: povtemp/ashleel:2
-       network_mode: "host"  
-       ports:
-         - "3000:3000"
-networks:
-    server-network:
-      driver: bridge
-
+  java-daemon:
+    image: java-daemon:latest
+    container_name: java-daemon-1
+    restart: unless-stopped
+    environment:
+      DAEMON_LANGUAGE: java
+      DAEMON_SOCKET_PATH: /var/run/daemon/daemon.sock
+      DAEMON_SOCKET_GID: "1000"
+      WORK_BASE_DIR: /sandbox/work
+    volumes:
+      - ./sockets/java:/var/run/daemon
+  node-worker:
+    image: node-worker:latest
+    container_name: node-worker-1
+    restart: unless-stopped
+    environment:
+      ROOT_DIR: /app
+      SERVER_1_URL: https://ashleel-backend.onrender.com
+      REDIS_URL: "redis url"
+      LANGUAGE: java
+      WORKER_ID: "1"
+      DAEMON_SOCKET: /var/run/daemon/daemon.sock
+    volumes:
+      - ./sockets/java:/var/run/daemon
+    group_add:
+      - "1000"
+    depends_on:
+      - java-daemon
