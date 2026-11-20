@@ -14,6 +14,7 @@
     "child-process": "^1.0.2",
     "dockerode": "^4.0.2",
     "dotenv": "^17.2.2",
-    "express": "^4.19.2"
+    "express": "^4.19.2",
+    "ioredis": "^6.0.0"
   }
 }

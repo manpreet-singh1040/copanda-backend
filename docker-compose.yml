@@ -1,6 +1,6 @@
 services:
   java-daemon:
-    image: java-daemon:latest
+    image: povtemp/copanda_java_container:latest
     container_name: java-daemon-1
     restart: unless-stopped
     environment:
@@ -10,9 +10,9 @@ services:
       WORK_BASE_DIR: /sandbox/work
     volumes:
       - ./sockets/java:/var/run/daemon
-  node-worker:
-    image: node-worker:latest
-    container_name: node-worker-1
+  java-node-worker:
+    image: povtemp/copanda_node_worker:latest
+    container_name: java-node-worker-1
     restart: unless-stopped
     environment:
       ROOT_DIR: /app
@@ -27,3 +27,104 @@ services:
       - "1000"
     depends_on:
       - java-daemon
+  c-daemon:
+    image: povtemp/copanda_c_container:latest
+    container_name: c-daemon-1
+    restart: unless-stopped
+    environment:
+      DAEMON_LANGUAGE: c
+      DAEMON_SOCKET_PATH: /var/run/daemon/daemon.sock
+      DAEMON_SOCKET_GID: "1000"
+      WORK_BASE_DIR: /sandbox/work
+    volumes:
+      - ./sockets/c:/var/run/daemon
+  c-node-worker:
+    image: povtemp/copanda_node_worker:latest
+    container_name: c-node-worker-1
+    restart: unless-stopped
+    environment:
+      ROOT_DIR: /app
+      SERVER_1_URL: https://ashleel-backend.onrender.com
+      REDIS_URL: "redis url"
+      LANGUAGE: c
+      WORKER_ID: "1"
+      DAEMON_SOCKET: /var/run/daemon/daemon.sock
+    volumes:
+      - ./sockets/c:/var/run/daemon
+    group_add:
+      - "1000"
+    depends_on:
+      - c-daemon
+  cpp-daemon:
+    image: povtemp/copanda_cpp_container:latest
+    container_name: cpp-daemon-1
+    restart: unless-stopped
+    environment:
+      DAEMON_LANGUAGE: cpp
+      DAEMON_SOCKET_PATH: /var/run/daemon/daemon.sock
+      DAEMON_SOCKET_GID: "1000"
+      WORK_BASE_DIR: /sandbox/work
+    volumes:
+      - ./sockets/cpp:/var/run/daemon
+  cpp-node-worker:
+    image: povtemp/copanda_node_worker:latest
+    container_name: cpp-node-worker-1
+    restart: unless-stopped
+    environment:
+      ROOT_DIR: /app
+      SERVER_1_URL: https://ashleel-backend.onrender.com
+      REDIS_URL: "redis url"
+      LANGUAGE: cpp
+      WORKER_ID: "1"
+      DAEMON_SOCKET: /var/run/daemon/daemon.sock
+    volumes:
+      - ./sockets/cpp:/var/run/daemon
+    group_add:
+      - "1000"
+    depends_on:
+      - cpp-daemon
+#   py-daemon:
+#     image: povtemp/copanda_py_container:latest
+#     container_name: py-daemon-1
+#     restart: unless-stopped
+#     environment:
+#       DAEMON_LANGUAGE: python
+#       DAEMON_SOCKET_PATH: /var/run/daemon/daemon.sock
+#       DAEMON_SOCKET_GID: "1000"
+#       WORK_BASE_DIR: /sandbox/work
+#     volumes:
+#       - ./sockets/python:/var/run/daemon
+#   py-node-worker:
+#     image: povtemp/copanda_node_worker:latest
+#     container_name: py-node-worker-1
+#     restart: unless-stopped
+#     environment:
+#       ROOT_DIR: /app
+#       SERVER_1_URL: https://ashleel-backend.onrender.com
+#       REDIS_URL: "redis url"
+#       LANGUAGE: python
+#       WORKER_ID: "1"
+#       DAEMON_SOCKET: /var/run/daemon/daemon.sock
+#     volumes:
+#       - ./sockets/python:/var/run/daemon
+#     group_add:
+#       - "1000"
+#     depends_on:
+#       - py-daemon
+#   js-node-worker:
+#     image: povtemp/copanda_node_worker:latest
+#     container_name: js-node-worker-1
+#     restart: unless-stopped
+#     environment:
+#       ROOT_DIR: /app
+#       SERVER_1_URL: https://ashleel-backend.onrender.com
+#       REDIS_URL: "redis url"
+#       LANGUAGE: javascript
+#       WORKER_ID: "1"
+#       DAEMON_SOCKET: /var/run/daemon/daemon.sock
+#     volumes:
+#       - ./sockets/javascript:/var/run/daemon
+#     group_add:
+#       - "1000"
+#     depends_on:
+#       - js-daemon
