@@ -1,0 +1,32 @@
+
+# Stage 1: Build Go daemon
+FROM golang:1.24-bookworm AS builder
+
+WORKDIR /app
+
+COPY go-deamon/go.mod ./
+RUN go mod download
+
+COPY go-deamon/ .
+
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
+    go build -trimpath -ldflags="-s -w" -o /out/daemon .
+
+# Stage 2: Python runtime + Go daemon
+FROM python:3.12-slim-bookworm
+
+WORKDIR /app
+
+COPY --from=builder /out/daemon /usr/local/bin/daemon
+
+RUN mkdir -p /var/run/daemon /sandbox/work \
+    && chmod 0770 /var/run/daemon \
+    && chmod 0777 /sandbox/work
+
+ENV DAEMON_LANGUAGE=python
+ENV DAEMON_SOCKET_PATH=/var/run/daemon/daemon.sock
+ENV WORK_BASE_DIR=/sandbox/work
+
+USER root
+
+CMD ["/usr/local/bin/daemon"]

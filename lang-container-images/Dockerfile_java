@@ -1,0 +1,36 @@
+
+# Stage 1: Build the Go daemon
+FROM golang:1.24-bookworm AS builder
+
+WORKDIR /app
+
+COPY go-deamon/go.mod ./
+RUN go mod download
+
+COPY go-deamon/ .
+
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
+    go build -trimpath -ldflags="-s -w" -o /out/daemon .
+
+# Stage 2: Java runtime + Go daemon
+FROM eclipse-temurin:17-jdk-jammy
+
+WORKDIR /app
+
+# Go daemon binary
+COPY --from=builder /out/daemon /usr/local/bin/daemon
+
+# Directories for Unix socket and execution workspaces
+RUN mkdir -p /var/run/daemon /sandbox/work \
+    && chmod 0770 /var/run/daemon \
+    && chmod 0777 /sandbox/work
+
+# Configure this daemon for Java only
+ENV DAEMON_LANGUAGE=java
+ENV DAEMON_SOCKET_PATH=/var/run/daemon/daemon.sock
+ENV WORK_BASE_DIR=/sandbox/work
+
+# Required because the daemon switches execution to UID/GID 65534
+USER root
+
+CMD ["/usr/local/bin/daemon"]
